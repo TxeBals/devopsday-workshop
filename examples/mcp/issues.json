@@ -1,0 +1,9 @@
+[
+ {"id": 12, "titulo": "Importes con IVA salen con un céntimo de menos", "estado": "abierta", "etiquetas": ["bug", "importes"],
+  "descripcion": "Una línea de 10,05 € al 10 % da 11,05 € y debería ser 11,06 €.", "pasos": "total_con_iva(10.05, 'reducido')", "comentarios": []},
+ {"id": 13, "titulo": "Vencimiento en domingo no pasa a lunes", "estado": "abierta", "etiquetas": ["bug", "fechas"],
+  "descripcion": "Factura del 6/3/2026 a 30 días vence el domingo 5/4. Debe ser el lunes 6/4.", "pasos": "vencimiento(date(2026,3,6), 30)", "comentarios": []},
+ {"id": 14, "titulo": "Descuentos comerciales en factura", "estado": "abierta", "etiquetas": ["feature"],
+  "descripcion": "Permitir un % de descuento sobre la base antes del IVA.", "pasos": "", "comentarios": []},
+ {"id": 9, "titulo": "Exportar a CSV", "estado": "cerrada", "etiquetas": ["feature"], "descripcion": "Hecho en v0.3", "pasos": "", "comentarios": []}
+]
