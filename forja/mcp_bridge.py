@@ -1,9 +1,9 @@
-"""Puente MCP -> ToolRegistry (DADO; lo usa el lab 10c).
+"""MCP -> ToolRegistry bridge (PROVIDED; used by lab 10c).
 
-El SDK MCP es async; nuestro agente es síncrono a propósito (más fácil de seguir).
-Levantamos un event loop en un hilo y exponemos cada tool MCP como `Tool` normal.
-Soporta servidores locales (stdio) y remotos (Streamable HTTP con token).
-Compatible con el SDK `mcp` 1.x y 2.x.
+The MCP SDK is async; our agent is synchronous on purpose (easier to follow).
+We start an event loop in a thread and expose each MCP tool as a normal `Tool`.
+Supports local (stdio) and remote (Streamable HTTP with token) servers.
+Compatible with the `mcp` SDK 1.x and 2.x.
 """
 from __future__ import annotations
 
@@ -22,7 +22,7 @@ from .tools import Tool
 
 
 class MCPTool(Tool):
-    """Tool cuyo schema viene del servidor MCP (no de type hints)."""
+    """Tool whose schema comes from the MCP server (not from type hints)."""
 
     input_schema: dict[str, Any]
 
@@ -33,8 +33,8 @@ class MCPTool(Tool):
 
 
 class MCPBridge:
-    """Uso:
-        with MCPBridge(["python", "mcp_servers/seguros_server.py"]) as mcp:
+    """Usage:
+        with MCPBridge(["python", "examples/mcp/issues_server.py"]) as mcp:
             registry.register(*mcp.tools(prefix="core_"))
     """
 
@@ -49,7 +49,7 @@ class MCPBridge:
 
     @classmethod
     def http(cls, url: str, token: str | None = None, headers: dict[str, str] | None = None, timeout: float = 30.0) -> MCPBridge:
-        """MCP remoto por Streamable HTTP (nivel Hero). Uso: with MCPBridge.http(url, token) as mcp: ..."""
+        """Remote MCP over Streamable HTTP (Hero level). Usage: with MCPBridge.http(url, token) as mcp: ..."""
         b = cls([], timeout=timeout)
         b.url = url
         b.headers = {**(headers or {}), **({"Authorization": f"Bearer {token}"} if token else {})}
@@ -58,7 +58,7 @@ class MCPBridge:
     async def _open_streams(self, stack: AsyncExitStack):
         if self.url is None:
             return await stack.enter_async_context(stdio_client(self.params))
-        try:  # mcp 2.x: cliente httpx propio con cabeceras
+        try:  # mcp 2.x: our own httpx client with headers
             import httpx2
             from mcp.client.streamable_http import streamable_http_client
 
@@ -74,7 +74,7 @@ class MCPBridge:
         return asyncio.run_coroutine_threadsafe(coro, self._loop).result(self.timeout)
 
     async def _lifetime(self, ready: asyncio.Future) -> None:
-        """Abre y cierra la sesión en LA MISMA task (anyio lo exige)."""
+        """Opens and closes the session in THE SAME task (anyio requires it)."""
         try:
             async with AsyncExitStack() as stack:
                 read, write = await self._open_streams(stack)
@@ -111,7 +111,7 @@ class MCPBridge:
             self._thread.join(timeout=5)
 
     def tools(self, prefix: str = "", risk: str = "exec") -> list[Tool]:
-        assert self.session, "usa MCPBridge como context manager"
+        assert self.session, "use MCPBridge as a context manager"
         listed = self._run(self.session.list_tools())
         out: list[Tool] = []
         for t in listed.tools:
@@ -127,7 +127,7 @@ class MCPBridge:
                 raise RuntimeError(text)
             return text
 
-        # Validación laxa en cliente: el servidor MCP es quien valida de verdad.
+        # Lax client-side validation: the MCP server does the real validation.
         args_model = create_model(f"{mcp_name}_mcp_args", __config__=ConfigDict(extra="allow"))
         t = MCPTool(name=prefix + mcp_name, description=description.strip().split("\n\n")[0], fn=fn, args_model=args_model, risk=risk)
         t.input_schema = input_schema

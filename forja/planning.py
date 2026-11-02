@@ -1,10 +1,10 @@
-"""LAB 08 — Planificar antes de actuar: lista de tareas y modo plan.
+"""LAB 08 — Plan before acting: task list and plan mode.
 
-* todo_write: el agente mantiene una lista de tareas visible para el usuario. Obliga al
-  modelo a descomponer, y al usuario le permite ver el progreso. Con modelos locales
-  pequeños mejora mucho la constancia en tareas largas.
-* Modo plan: solo lectura. El agente investiga y propone un plan con exit_plan_mode; si
-  el usuario lo aprueba, el harness pasa a modo default (o accept_edits) y se ejecuta.
+* todo_write: the agent keeps a task list visible to the user. It forces the model
+  to decompose the work, and lets the user see progress. With small local models
+  it greatly improves persistence on long tasks.
+* Plan mode: read-only. The agent investigates and proposes a plan with exit_plan_mode; if
+  the user approves it, the harness switches to default mode (or accept_edits) and it is executed.
 """
 from __future__ import annotations
 
@@ -31,38 +31,38 @@ class TodoStore:
 
     def render(self) -> str:
         if not self.items:
-            return "(lista vacía)"
+            return "(empty list)"
         return "\n".join(f"{ICON[i.status]} {i.content}" for i in self.items)
 
 
-# ---- TODO 08.1 : la tool todo_write con validación ---------------------------
+# ---- TODO 08.1 : the todo_write tool with validation --------------------------
 def make_todo_tool(store: TodoStore) -> Tool:
     @tool(risk="read")
     def todo_write(todos: list[TodoItem]) -> str:
-        """Crea o actualiza tu lista de tareas (sustituye la lista completa). Úsala en tareas de 3+ pasos:
-        al empezar, divide el trabajo; marca una tarea in_progress antes de empezarla y completed al terminarla.
-        Solo puede haber UNA tarea in_progress a la vez.
+        """Creates or updates your task list (replaces the whole list). Use it for tasks with 3+ steps:
+        at the start, split the work; mark a task in_progress before starting it and completed when done.
+        Only ONE task can be in_progress at a time.
 
         Args:
-            todos: Lista completa de tareas con content y status (pending, in_progress, completed).
+            todos: Full list of tasks with content and status (pending, in_progress, completed).
         """
-        # TODO 08.1: Convierte cada elemento a TodoItem (pueden llegar dicts). Más de una in_progress -> ValueError. content vacío -> ValueError. store.items = items. Devuelve 'Lista actualizada (X/N completadas):' + store.render().
+        # TODO 08.1: Convert each item to TodoItem (dicts may arrive). More than one in_progress -> ValueError. Empty content -> ValueError. store.items = items. Return 'List updated (X/N completed):' + store.render().
         raise NotImplementedError("TODO 08.1")
 
     return todo_write
 
 
-# ---- TODO 08.2 : salir del modo plan con aprobación del usuario --------------
+# ---- TODO 08.2 : leave plan mode with user approval --------------------------
 def make_exit_plan_tool(approve: Callable[[str], bool], on_approved: Callable[[], None]) -> Tool:
     @tool(risk="read")
     def exit_plan_mode(plan: str) -> str:
-        """En modo plan, presenta al usuario tu plan de implementación (markdown: ficheros a tocar, cambios,
-        cómo verificar) y pide aprobación para empezar a ejecutarlo.
+        """In plan mode, presents your implementation plan to the user (markdown: files to touch, changes,
+        how to verify) and asks for approval to start executing it.
 
         Args:
-            plan: El plan, concreto y breve.
+            plan: The plan, concrete and brief.
         """
-        # TODO 08.2: Plan vacío -> ValueError. Si approve(plan): on_approved() y devuelve un texto que diga que el usuario APROBÓ y que implemente. Si no: que RECHAZÓ y sigue en modo plan.
+        # TODO 08.2: Empty plan -> ValueError. If approve(plan): on_approved() and return a text saying the user APPROVED and it should implement it. Otherwise: that they REJECTED it and it is still in plan mode.
         raise NotImplementedError("TODO 08.2")
 
     return exit_plan_mode

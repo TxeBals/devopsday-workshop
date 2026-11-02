@@ -1,16 +1,16 @@
-"""LAB 04b — Permisos: autonomía graduable con reglas.
+"""LAB 04b — Permissions: adjustable autonomy with rules.
 
-Modos (los mismos conceptos que usan los agentes de código comerciales):
-  default      -> lecturas libres; ediciones y bash preguntan
-  accept_edits -> lecturas y ediciones libres; bash pregunta
-  plan         -> SOLO lectura; editar o ejecutar se deniega (lab 08)
-  bypass       -> todo permitido salvo las reglas deny (para sandbox/CI, nunca en tu portátil)
+Modes (the same concepts commercial coding agents use):
+  default      -> reads free; edits and bash ask
+  accept_edits -> reads and edits free; bash asks
+  plan         -> READ-only; editing or executing is denied (lab 08)
+  bypass       -> everything allowed except deny rules (for sandbox/CI, never on your laptop)
 
-Reglas:  "nombre_tool"  o  "nombre_tool(patrón)"  — el patrón (fnmatch) se compara con el
-"subject" de la llamada: el comando en bash, la ruta en las tools de ficheros.
+Rules:  "tool_name"  or  "tool_name(pattern)"  — the pattern (fnmatch) is matched against the
+call's "subject": the command for bash, the path for file tools.
   allow: ["bash(pytest*)", "bash(git status*)", "edit_file(src/*)"]
   deny:  ["bash(sudo *)", "read_file(.env*)"]
-Orden de evaluación: deny > modo plan > allow > riesgo/modo > preguntar.
+Evaluation order: deny > plan mode > allow > risk/mode > ask.
 """
 from __future__ import annotations
 
@@ -30,31 +30,31 @@ RULE_RE = re.compile(r"^([\w.\-*?]+)(?:\((.*)\))?$")
 def parse_rule(rule: str) -> tuple[str, str | None]:
     m = RULE_RE.match(rule.strip())
     if not m:
-        raise ValueError(f"regla inválida: {rule!r}")
+        raise ValueError(f"invalid rule: {rule!r}")
     return m.group(1), m.group(2)
 
 
-# ---- TODO 04.3 : ¿una regla casa con una llamada? -------------------------
+# ---- TODO 04.3 : does a rule match a call? --------------------------------
 def rule_matches(rule: str, tool: Tool, args: dict[str, Any]) -> bool:
-    # TODO 04.3: name, pattern = parse_rule(rule). El nombre de tool se compara con fnmatchcase (permite 'mcp__issues__*'). Sin patrón: casa. Con patrón: fnmatchcase(tool.subject(args), pattern); en bash normaliza espacios (' '.join(split())).
+    # TODO 04.3: name, pattern = parse_rule(rule). The tool name is matched with fnmatchcase (allows 'mcp__issues__*'). No pattern: match. With a pattern: fnmatchcase(tool.subject(args), pattern); for bash normalise whitespace (' '.join(split())).
     raise NotImplementedError("TODO 04.3")
 
 
 def split_commands(command: str) -> list[str]:
-    """`pytest -q && rm -rf /` son DOS comandos: una regla allow para pytest no debe colar el segundo."""
+    """`pytest -q && rm -rf /` is TWO commands: an allow rule for pytest must not let the second one through."""
     parts = re.split(r"\s*(?:&&|\|\||;|\|)\s*", command.strip())
     return [p for p in parts if p]
 
 
-# ---- TODO 04.4 : la decisión ---------------------------------------------
+# ---- TODO 04.4 : the decision ---------------------------------------------
 def decide(tool: Tool, args: dict[str, Any], mode: Mode, allow: list[str], deny: list[str]) -> tuple[Decision, str]:
-    # TODO 04.4: 1) deny (también por cada subcomando de bash con split_commands) -> 'deny'. 2) plan y riesgo != read -> 'deny'. 3) allow: en bash TODOS los subcomandos deben casar con alguna regla; en el resto, alguna regla. 4) riesgo read o modo bypass -> allow. 5) accept_edits y riesgo edit -> allow. 6) 'ask'. Devuelve (decisión, motivo).
+    # TODO 04.4: 1) deny (also for each bash subcommand via split_commands) -> 'deny'. 2) plan and risk != read -> 'deny'. 3) allow: for bash ALL subcommands must match some rule; for the rest, some rule. 4) read risk or bypass mode -> allow. 5) accept_edits and edit risk -> allow. 6) 'ask'. Return (decision, reason).
     raise NotImplementedError("TODO 04.4")
 
 
-# ---- TODO 04.5 : sugerir una regla para "aprobar siempre" ---------------------
+# ---- TODO 04.5 : suggest a rule for "always approve" --------------------------
 def suggest_rule(tool: Tool, args: dict[str, Any]) -> str:
-    """Al responder 'siempre', guardamos una regla razonable, no el comando literal:
+    """When the answer is 'always', we save a sensible rule, not the literal command:
     bash `pytest -q tests/x.py` -> `bash(pytest *)`; edit_file -> `edit_file`."""
-    # TODO 04.5: bash: shlex.split; 'python -m X' -> bash(python -m X*); git/npm/uv/pip/docker… -> bash(<cmd> <subcmd>*); resto -> bash(<cmd>*). Otras tools: su nombre.
+    # TODO 04.5: bash: shlex.split; 'python -m X' -> bash(python -m X*); git/npm/uv/pip/docker… -> bash(<cmd> <subcmd>*); others -> bash(<cmd>*). Other tools: their name.
     raise NotImplementedError("TODO 04.5")

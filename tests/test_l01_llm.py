@@ -8,7 +8,7 @@ from forja.llm import LLMClient, ThinkFilter, ToolCallAccumulator, rescue_text_t
 from forja.types import Done, TextDelta
 
 
-class D:  # imita los objetos delta del SDK
+class D:  # mimics the SDK's delta objects
     def __init__(self, index, id=None, name=None, arguments=None):
         self.index, self.id = index, id
         self.function = type("F", (), {"name": name, "arguments": arguments})()
@@ -31,11 +31,11 @@ def test_accumulator_empty_args_and_missing_id():
     assert c.arguments == "{}" and c.id
 
 
-@pytest.mark.parametrize("chunks", [["<think>razono</think>Hola"], ["<thi", "nk>razono</th", "ink>Ho", "la"], ["Ho", "la<", "think>x</think>"]])
+@pytest.mark.parametrize("chunks", [["<think>reasoning</think>Hello"], ["<thi", "nk>reasoning</th", "ink>Hel", "lo"], ["Hel", "lo<", "think>x</think>"]])
 def test_think_filter_split_tags(chunks):
     f = ThinkFilter()
     out = "".join(f.feed(c) for c in chunks) + f.flush()
-    assert out.replace("\n", "") == "Hola"
+    assert out.replace("\n", "") == "Hello"
 
 
 def test_think_filter_keeps_normal_lt():
@@ -44,8 +44,8 @@ def test_think_filter_keeps_normal_lt():
 
 
 def test_rescue_text_tool_calls():
-    rest, calls = rescue_text_tool_calls('Voy.<tool_call>{"name": "glob", "arguments": {"pattern": "*.py"}}</tool_call>')
-    assert rest == "Voy." and calls[0].name == "glob"
+    rest, calls = rescue_text_tool_calls('On it.<tool_call>{"name": "glob", "arguments": {"pattern": "*.py"}}</tool_call>')
+    assert rest == "On it." and calls[0].name == "glob"
 
 
 def sse(*chunks) -> bytes:
@@ -70,18 +70,18 @@ def test_stream_text_and_tool_calls():
 
     def handler(req):
         seen.update(json.loads(req.content))
-        body = sse(chunk({"role": "assistant", "content": "<think>x</think>Mira"}), chunk({"content": "ndo…"}),
+        body = sse(chunk({"role": "assistant", "content": "<think>x</think>Look"}), chunk({"content": "ing…"}),
                    chunk({"tool_calls": [{"index": 0, "id": "c1", "type": "function", "function": {"name": "read_file", "arguments": '{"path":'}}]}),
                    chunk({"tool_calls": [{"index": 0, "function": {"arguments": ' "a.py"}'}}]}, finish="tool_calls"),
                    chunk(usage={"prompt_tokens": 10, "completion_tokens": 5, "total_tokens": 15}))
         return httpx.Response(200, content=body, headers={"content-type": "text/event-stream"})
 
-    events = list(client(handler).stream([{"role": "user", "content": "hola"}], tools=[{"type": "function", "function": {"name": "read_file", "parameters": {}}}]))
+    events = list(client(handler).stream([{"role": "user", "content": "hello"}], tools=[{"type": "function", "function": {"name": "read_file", "parameters": {}}}]))
     text = "".join(e.text for e in events if isinstance(e, TextDelta))
     done = events[-1]
-    assert isinstance(done, Done) and text == "Mirando…"
+    assert isinstance(done, Done) and text == "Looking…"
     r = done.response
-    assert r.content == "Mirando…" and r.tool_calls[0].name == "read_file" and json.loads(r.tool_calls[0].arguments) == {"path": "a.py"}
+    assert r.content == "Looking…" and r.tool_calls[0].name == "read_file" and json.loads(r.tool_calls[0].arguments) == {"path": "a.py"}
     assert r.usage == {"prompt_tokens": 10, "completion_tokens": 5}
     assert seen["stream"] is True and seen["tool_choice"] == "auto" and seen["provider"] == {"data_collection": "deny"}
 

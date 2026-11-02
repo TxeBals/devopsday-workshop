@@ -1,37 +1,37 @@
-# Lab 12 · Evals: medir tu agente
+# Lab 12 · Evals: measure your agent
 
-🇬🇧 [English](README.en.md) · Día 2 · 14:55–16:00
+Day 2 · 14:55–16:00
 
-**Objetivo:** Comparar modelos y cambios del harness con tareas reales y comprobaciones objetivas.
+**Goal:** Compare models and harness changes with real tasks and objective checks.
 
-## Conceptos
-- **Sin medir, todo es opinión.** ¿Es mejor `qwen3-coder:30b` que `qwen3:8b`? ¿Tu nuevo prompt ayuda? Se mide.
-- **Tarea = prompt + comprobación objetiva** sobre una COPIA limpia del proyecto: tests (`command`), tests OCULTOS que se copian después (`hidden`, para que no haga trampa), contenido de la respuesta (`answer_contains`) y no modificar nada (`forbid_changes`).
-- **Headless + bypass dentro de la copia:** el sandbox es la carpeta temporal.
-- **Varias repeticiones:** los modelos no son deterministas. Mira pass rate, pasos, tiempo y tokens.
+## Concepts
+- **Without measuring, it's all opinion.** Is `qwen3-coder:30b` better than `qwen3:8b`? Does your new prompt help? Measure it.
+- **Task = prompt + objective check** on a CLEAN COPY of the project: tests (`command`), HIDDEN tests copied afterwards (`hidden`, so it can't cheat), answer content (`answer_contains`) and changing nothing (`forbid_changes`).
+- **Headless + bypass inside the copy:** the sandbox is the temp folder.
+- **Several repetitions:** models aren't deterministic. Look at pass rate, steps, time and tokens.
 
-## Lo que implementas
-| TODO | Fichero | Qué |
+## What you implement
+| TODO | File | What |
 |---|---|---|
-| 12.1 | `forja/evals.py` | grade: aplicar las comprobaciones |
-| 12.2 | `forja/evals.py` | summarize: pass rate, por tarea, pasos, tiempo, tokens |
+| 12.1 | `forja/evals.py` | grade: apply the checks |
+| 12.2 | `forja/evals.py` | summarize: pass rate, per task, steps, time, tokens |
 
-## Ejecuta
+## Run
 ```bash
 python scripts/tasks.py test 12
-python scripts/tasks.py evals --only fix_redondeo
+python scripts/tasks.py evals --only fix_rounding
 python scripts/tasks.py evals --repeat 3
 python scripts/tasks.py evals --model qwen3-coder:30b --repeat 3
 ```
 
 ## Checkpoint
-Tienes un informe en `out/` y puedes decir, con números, qué modelo usarías y para qué tareas.
+You have a report in `out/` and can say, with numbers, which model you'd use for which tasks.
 
-## Retos
-1. Añade una tarea propia a `evals/tasks.yaml`.
-2. Compara tu harness con y sin `todo_write` en el prompt base.
+## Challenges
+1. Add your own task to `evals/tasks.yaml`.
+2. Compare your harness with and without `todo_write` in the base prompt.
 
-**Tests:** `tests/test_l12_evals.py` · **¿Te has quedado atrás?** `python scripts/tasks.py catchup end`
+**Tests:** `tests/test_l12_evals.py` · **Fallen behind?** `python scripts/tasks.py catchup end`
 
 ---
-[← anterior](../L11_sesiones/README.md)
+[← previous](../L11_sessions/README.md)

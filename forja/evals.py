@@ -1,13 +1,13 @@
-"""LAB 12 — Evals: medir tu agente (y tus modelos) con tareas reales.
+"""LAB 12 — Evals: measure your agent (and your models) with real tasks.
 
-Cada tarea = un prompt + una comprobación objetiva, ejecutada en una COPIA limpia del
-proyecto de prácticas. Comprobaciones:
-  * command          un comando que debe terminar con exit 0 (normalmente tests)
-  * hidden           tests OCULTOS que se copian después de que trabaje el agente
-                     (así no puede "hacer trampa" leyéndolos o editándolos)
-  * answer_contains  la respuesta debe contener ciertos datos (preguntas sobre el código)
-  * forbid_changes   la tarea no debe modificar ningún fichero
-El agente corre headless en modo bypass DENTRO de la copia: el sandbox es la carpeta temporal.
+Each task = a prompt + an objective check, run on a clean COPY of the practice
+project. Checks:
+  * command          a command that must finish with exit 0 (usually tests)
+  * hidden           HIDDEN tests copied in after the agent has worked
+                     (so it can't "cheat" by reading or editing them)
+  * answer_contains  the answer must contain certain facts (questions about the code)
+  * forbid_changes   the task must not modify any file
+The agent runs headless in bypass mode INSIDE the copy: the sandbox is the temp folder.
 """
 from __future__ import annotations
 
@@ -66,15 +66,15 @@ def norm(s: str) -> str:
     return "".join(c for c in s if not unicodedata.combining(c))
 
 
-# ---- TODO 12.1 : corregir una tarea --------------------------------------------
+# ---- TODO 12.1 : grade a task ---------------------------------------------------
 def grade(task: EvalTask, workdir: Path, answer: str, before: dict[str, str], repo_root: Path) -> tuple[bool, str]:
-    # TODO 12.1: En orden: forbid_changes (snapshot distinto -> falla); answer_contains (comparar con norm(), lista lo que falta); copiar los hidden al workdir; ejecutar command en el workdir (timeout -> falla; exit != 0 -> falla con las 3 últimas líneas). Si todo bien: (True, 'ok').
+    # TODO 12.1: In order: forbid_changes (different snapshot -> fail); answer_contains (compare with norm(), list what is missing); copy the hidden files into the workdir; run command in the workdir (timeout -> fail; exit != 0 -> fail with the last 3 lines). If all good: (True, 'ok').
     raise NotImplementedError("TODO 12.1")
 
 
 def run_task(task: EvalTask, llm: ChatModel, playground: Path, repo_root: Path, max_steps: int = 30) -> TaskResult:
     with tempfile.TemporaryDirectory(prefix=f"forja-eval-{task.id}-") as tmp:
-        work = Path(tmp) / "proyecto"
+        work = Path(tmp) / "project"
         shutil.copytree(playground, work, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", ".forja"))
         before = snapshot(work)
         app = Forja(llm, work, mode="bypass", settings=Settings(max_steps=max_steps), home=Path(tmp) / "home",
@@ -84,13 +84,13 @@ def run_task(task: EvalTask, llm: ChatModel, playground: Path, repo_root: Path, 
             r = app.turn(task.prompt)
             answer, steps, calls, stop = r.answer, r.steps, r.tool_calls, r.stop_reason
         except Exception as e:  # noqa: BLE001
-            answer, steps, calls, stop = f"EXCEPCIÓN {type(e).__name__}: {e}", 0, 0, "error"
+            answer, steps, calls, stop = f"EXCEPTION {type(e).__name__}: {e}", 0, 0, "error"
         secs = round(time.time() - t0, 1)
         passed, reason = grade(task, work, answer, before, repo_root)
         return TaskResult(task.id, passed, reason, steps, calls, sum(app.usage.values()), secs, stop, answer[:500])
 
 
-# ---- TODO 12.2 : resumir resultados -----------------------------------------------
+# ---- TODO 12.2 : summarise results -----------------------------------------------
 def summarize(results: list[TaskResult], model: str) -> dict[str, Any]:
-    # TODO 12.2: Agrupa por id. Devuelve model, runs, pass_rate (3 decimales), per_task (2 decimales), avg_steps y avg_seconds (1 decimal), total_tokens y results (asdict).
+    # TODO 12.2: Group by id. Return model, runs, pass_rate (3 decimals), per_task (2 decimals), avg_steps and avg_seconds (1 decimal), total_tokens and results (asdict).
     raise NotImplementedError("TODO 12.2")

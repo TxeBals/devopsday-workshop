@@ -1,12 +1,12 @@
-"""LAB 04a — La tool bash: el poder (y el riesgo) de un agente de código.
+"""LAB 04a — The bash tool: the power (and the risk) of a coding agent.
 
-Con bash el agente ejecuta tests, instala dependencias, usa git… y también podría
-borrar tu disco. Esta tool solo ejecuta: QUIÉN puede ejecutar QUÉ lo decide permissions.py.
+With bash the agent runs tests, installs dependencies, uses git… and could also
+wipe your disk. This tool only executes: WHO may run WHAT is decided by permissions.py.
 
-Decisiones de diseño:
-  * cwd = raíz del workspace en cada llamada ("fresh exec"): `cd` no persiste. Predecible.
-  * timeout duro; salida truncada por cabeza y cola (los errores suelen estar al final).
-  * entorno saneado: no heredamos secretos (*_KEY, *_TOKEN, *_SECRET).
+Design decisions:
+  * cwd = workspace root on every call ("fresh exec"): `cd` doesn't persist. Predictable.
+  * hard timeout; output truncated head and tail (errors are usually at the end).
+  * sanitised environment: we don't inherit secrets (*_KEY, *_TOKEN, *_SECRET).
 """
 from __future__ import annotations
 
@@ -23,33 +23,33 @@ MAX_SHELL_OUTPUT = 20_000
 
 def clean_env() -> dict[str, str]:
     env = {k: v for k, v in os.environ.items() if not SECRET_ENV.search(k)}
-    env["PAGER"] = "cat"  # sin paginadores interactivos
+    env["PAGER"] = "cat"  # no interactive pagers
     env["GIT_PAGER"] = "cat"
     env["PYTHONUNBUFFERED"] = "1"
     return env
 
 
-# ---- TODO 04.1 : truncar por cabeza y cola ---------------------------------
+# ---- TODO 04.1 : truncate head and tail ------------------------------------
 def head_tail(text: str, limit: int = MAX_SHELL_OUTPUT) -> str:
-    # TODO 04.1: Si cabe, tal cual. Si no: 1/4 del límite del principio + 3/4 del final, con un aviso de cuántos caracteres se omiten en medio.
+    # TODO 04.1: If it fits, unchanged. Otherwise: 1/4 of the limit from the start + 3/4 from the end, with a note saying how many characters are omitted in the middle.
     raise NotImplementedError("TODO 04.1")
 
 
 def make_shell_tool(ws: Workspace, default_timeout: int = 120) -> Tool:
-    # ---- TODO 04.2 : ejecutar con timeout y salida combinada ------------
+    # ---- TODO 04.2 : run with timeout and combined output --------------
     @tool(risk="exec")
     def bash(command: str, timeout: int = default_timeout) -> ToolOutput:
-        """Ejecuta un comando de shell en la raíz del proyecto (cada llamada empieza ahí: `cd` no persiste,
-        encadena con `&&`). Úsalo para tests, git, instalar dependencias o ejecutar scripts.
-        No lo uses para leer o buscar ficheros: para eso tienes read_file, grep y glob.
+        """Runs a shell command at the project root (every call starts there: `cd` doesn't persist,
+        chain with `&&`). Use it for tests, git, installing dependencies or running scripts.
+        Don't use it to read or search files: use read_file, grep and glob for that.
 
         Args:
-            command: Comando a ejecutar.
-            timeout: Segundos máximos (por defecto 120, máximo 600).
+            command: Command to run.
+            timeout: Maximum seconds (default 120, maximum 600).
         """
-        # TODO 04.2: subprocess.run(command, shell=True, cwd=ws.root, capture_output, text, timeout (1..600), env=clean_env(), stdin=DEVNULL). TimeoutExpired -> 'TIMEOUT tras Ns'. Devuelve ToolOutput('exit_code=N\n' + head_tail(stdout + [stderr]), {'exit_code': N}).
+        # TODO 04.2: subprocess.run(command, shell=True, cwd=ws.root, capture_output, text, timeout (1..600), env=clean_env(), stdin=DEVNULL). TimeoutExpired -> 'TIMEOUT after Ns'. Return ToolOutput('exit_code=N\n' + head_tail(stdout + [stderr]), {'exit_code': N}).
         raise NotImplementedError("TODO 04.2")
 
-    shell = "cmd.exe (Windows: usa sintaxis de cmd o invoca `powershell -Command ...`)" if os.name == "nt" else "/bin/sh"
-    bash.description += f"\nShell del sistema: {shell}."
+    shell = "cmd.exe (Windows: use cmd syntax or invoke `powershell -Command ...`)" if os.name == "nt" else "/bin/sh"
+    bash.description += f"\nShell: {shell}."
     return bash

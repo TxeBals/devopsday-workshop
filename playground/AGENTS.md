@@ -1,6 +1,6 @@
-# AGENTS.md — proyecto facturas
+# AGENTS.md — invoices project
 
-- Python 3.11+, sin dependencias externas salvo pytest.
-- Tests: `python -m pytest -q`. Ejecútalos siempre después de cambiar código.
-- Importes en euros con 2 decimales y redondeo half-up (usa `decimal`, nunca `round()` sobre floats).
-- No cambies los tests existentes para que pasen: arregla el código.
+- Python 3.11+, no external dependencies except pytest.
+- Tests: `python -m pytest -q`. Always run them after changing code.
+- Amounts in euros with 2 decimals and half-up rounding (use `decimal`, never `round()` on floats).
+- Don't change the existing tests to make them pass: fix the code.

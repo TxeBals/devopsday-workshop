@@ -1,60 +1,58 @@
-# Forja · Construye tu propio agente de código con modelos locales
+# Forja · Build your own coding agent with local models
 
-🇬🇧 [English](README.en.md)
+Hands-on workshop where you build **Forja**, a terminal coding agent —like Claude Code, Codex CLI or OpenCode— from scratch,
+in Python, on **local open models** (Ollama, vLLM, LM Studio) or OpenRouter with open-weight models.
+Anthropic and OpenAI models are blocked in code.
 
-Workshop práctico de 2 días (o 1 día comprimido) en el que cada asistente construye **Forja**, un agente de código de terminal —del tipo de Claude Code, Codex CLI u OpenCode— desde cero, en Python y con **modelos abiertos en local** (Ollama, vLLM, LM Studio) u OpenRouter con modelos open-weight. No se usan modelos de Anthropic ni OpenAI: el código los bloquea.
+Each lab fills in one piece. The harness is **progressive**: the CLI works from lab 01 and gains capabilities as you complete labs.
 
-Cada lab rellena una pieza; el harness es **progresivo**: la CLI funciona desde el lab 01 y gana capacidades a medida que completas labs.
-
-## Por dónde empiezo
-1. [Checklist de setup](docs/checklist_setup.md) — **antes del día**.
-2. [Cuaderno del alumno](docs/alumno/cuaderno_alumno.md).
-3. Los labs, en orden.
+## Where to start
+1. [Setup checklist](docs/setup_checklist.md) — **before the day**.
+2. [Student workbook](docs/student_workbook.md).
+3. The labs, in order.
 
 ## Labs
-| Lab | Día · hora | Tema |
+| Lab | Day · time | Topic |
 |---|---|---|
-| [L00](labs/L00_setup/README.md) | 1 · 09:00–09:30 | Setup y primer contacto |
-| [L01](labs/L01_llm_streaming/README.md) | 1 · 09:30–10:15 | Cliente LLM con streaming |
-| [L02](labs/L02_tools_ficheros/README.md) | 1 · 10:15–11:15 | Tools de ficheros |
-| [L03](labs/L03_bucle/README.md) | 1 · 11:30–12:15 | El bucle del agente |
-| [L04](labs/L04_bash_permisos/README.md) | 1 · 12:15–13:00 | Bash y permisos |
-| [L05](labs/L05_cli/README.md) | 1 · 14:00–15:00 | La CLI: tu agente de terminal |
-| [L06](labs/L06_contexto/README.md) | 2 · 09:00–09:40 | Ingeniería de contexto |
-| [L07](labs/L07_compactacion/README.md) | 2 · 09:40–10:25 | Gestión de contexto y compactación |
-| [L08](labs/L08_planificacion/README.md) | 2 · 10:25–11:10 | Planificar antes de actuar |
-| [L09](labs/L09_subagentes/README.md) | 2 · 11:25–12:10 | Subagentes |
-| [L10](labs/L10_extensiones/README.md) | 2 · 12:10–13:20 | Extensibilidad: hooks, skills y MCP |
-| [L11](labs/L11_sesiones/README.md) | 2 · 14:20–14:55 | Sesiones y deshacer |
-| [L12](labs/L12_evals/README.md) | 2 · 14:55–16:00 | Evals: medir tu agente |
-| — | 2 · 16:00 | Proyecto final (ver cuaderno) |
+| [L00](labs/L00_setup/README.md) | 1 · 09:00–09:30 | Setup and first contact |
+| [L01](labs/L01_llm_streaming/README.md) | 1 · 09:30–10:15 | Streaming LLM client |
+| [L02](labs/L02_file_tools/README.md) | 1 · 10:15–11:15 | File tools |
+| [L03](labs/L03_loop/README.md) | 1 · 11:30–12:15 | The agent loop |
+| [L04](labs/L04_bash_permissions/README.md) | 1 · 12:15–13:00 | Bash and permissions |
+| [L05](labs/L05_cli/README.md) | 1 · 14:00–15:00 | The CLI: your terminal agent |
+| [L06](labs/L06_context/README.md) | 2 · 09:00–09:40 | Context engineering |
+| [L07](labs/L07_compaction/README.md) | 2 · 09:40–10:25 | Context management and compaction |
+| [L08](labs/L08_planning/README.md) | 2 · 10:25–11:10 | Plan before acting |
+| [L09](labs/L09_subagents/README.md) | 2 · 11:25–12:10 | Subagents |
+| [L10](labs/L10_extensions/README.md) | 2 · 12:10–13:20 | Extensibility: hooks, skills and MCP |
+| [L11](labs/L11_sessions/README.md) | 2 · 14:20–14:55 | Sessions and undo |
+| [L12](labs/L12_evals/README.md) | 2 · 14:55–16:00 | Evals: measure your agent |
+| — | 2 · 16:00 | Final project (see the workbook) |
 
-## Comandos (Windows, macOS y Linux)
+## Commands (Windows, macOS and Linux)
 ```bash
-python scripts/tasks.py setup          # instalar y crear .env
-python scripts/tasks.py test 03        # tests del lab 03 contra tu código
-python scripts/tasks.py catchup 05     # ponerte al día: resuelve los labs 01–04 (con forja-solutions.zip del tutor)
-forja                                  # tu agente, sobre el directorio actual
-python scripts/tasks.py evals          # evals con tu agente
+python scripts/tasks.py setup          # install and create .env
+python scripts/tasks.py test 03        # lab 03 tests against your code
+forja                                  # your agent, on the current directory
+python scripts/tasks.py evals          # evals with your agent
+python scripts/tasks.py catchup 05     # catch up: solves labs 01–04 (needs the tutor's forja-solutions.zip)
+python scripts/tasks.py reset          # restore playground/ (git)
 ```
 
-## Estructura
+## Layout
 ```
 devopsday-workshop/
-├── docs/
-│   ├── alumno/         cuaderno_alumno.md                    ← alumno (ES)
-│   ├── student/        student_workbook.md                   ← student (EN)
-│   ├── checklist_setup.md · setup_checklist.md · hardware.png
-├── labs/L00…L12/       README.md (ES) · README.en.md (EN)
-├── forja/              código del alumno con TODOs  / student code with TODOs
-├── tests/              test_lNN_*.py  (offline, FakeLLM)
-├── playground/         proyecto con bugs para el agente / buggy practice project
-├── examples/           settings, hooks, skills, subagente, servidor MCP
-├── evals/              tasks.yaml · hidden/ · run_evals.py
-└── scripts/            tasks.py · catchup.py
+├── docs/          setup_checklist.md · student_workbook.md · hardware.png
+├── labs/          L00…L12, one README per lab
+├── forja/         your code: functions with TODO NN.x
+├── tests/         test_lNN_*.py (offline, FakeLLM: no GPU needed)
+├── playground/    small invoices project with bugs for your agent
+├── examples/      settings, hooks, skill, subagent, MCP server
+├── evals/         tasks.yaml · hidden/ · run_evals.py
+└── scripts/       tasks.py · catchup.py
 ```
 
-## Notas
-- Datos y proyecto de práctica sintéticos.
-- No se basa en OpenClaude (fork del código filtrado de Claude Code): Forja es una implementación propia con la misma arquitectura, documentada públicamente.
-- Los tests no necesitan modelo ni GPU (FakeLLM). Los tags de modelos cambian: verifícalos antes del workshop.
+## Notes
+- Synthetic data and practice project.
+- Forja is an independent implementation of the publicly documented architecture of coding agents.
+- Tests need no model or GPU. Model tags change: check them before the workshop.

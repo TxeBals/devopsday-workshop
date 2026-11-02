@@ -1,20 +1,20 @@
-# Ejemplos de extensibilidad (lab 10)
+# Extensibility examples (lab 10)
 
-`project/.forja/` es una configuración completa para copiar a la raíz de **playground/**:
+`project/.forja/` is a complete configuration to copy into the root of **playground/**:
 
 ```bash
 cp -r examples/project/.forja playground/      # Windows: xcopy /E /I examples\project\.forja playground\.forja
 cd playground && forja
 ```
 
-| Pieza | Fichero | Qué demuestra |
+| Piece | File | What it shows |
 |---|---|---|
-| Permisos | `settings.json` → `permissions` | allow/deny por tool y patrón |
-| Hook PreToolUse | `hooks/bloquear_secretos.py` | bloquear comandos con secretos (exit 2) |
-| Hook PostToolUse | `hooks/compilar.py` | feedback inmediato si una edición rompe la sintaxis |
-| Hook Stop | `settings.json` → `Stop` | el agente no "termina" hasta que pasan los tests |
-| Skill | `skills/conventional-commits/SKILL.md` | conocimiento bajo demanda |
-| Subagente | `agents/revisor.md` | perfil propio con tools restringidas |
-| MCP | `../mcp/issues_server.py` | issues como tools `mcp__issues__*` |
+| Permissions | `settings.json` → `permissions` | allow/deny by tool and pattern |
+| PreToolUse hook | `hooks/block_secrets.py` | block commands that touch secrets (exit 2) |
+| PostToolUse hook | `hooks/compile_check.py` | immediate feedback if an edit breaks the syntax |
+| Stop hook | `settings.json` → `Stop` | the agent doesn't "finish" until the tests pass |
+| Skill | `skills/conventional-commits/SKILL.md` | on-demand knowledge |
+| Subagent | `agents/reviewer.md` | custom profile with restricted tools |
+| MCP | `../mcp/issues_server.py` | issues as `mcp__issues__*` tools |
 
-Prueba: *"Lista las issues abiertas, arregla la #12 y comenta en la issue qué cambiaste"*.
+Try: *"List the open issues, fix #12 and comment on the issue what you changed"*.

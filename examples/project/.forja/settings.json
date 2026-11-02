@@ -1,0 +1,16 @@
+{
+  "permissions": {
+    "allow": ["bash(python -m pytest*)", "bash(git status*)", "bash(git diff*)", "mcp__issues__*"],
+    "deny":  ["read_file(.env*)", "bash(curl *)", "bash(wget *)"]
+  },
+  "hooks": {
+    "PreToolUse":  [{"matcher": "bash", "command": "python .forja/hooks/block_secrets.py"}],
+    "PostToolUse": [{"matcher": "edit_file|write_file", "command": "python .forja/hooks/compile_check.py"}],
+    "Stop":        [{"command": "python -m pytest -q -x --no-header -p no:cacheprovider"}]
+  },
+  "mcpServers": {
+    "issues": {"command": ["python", "../examples/mcp/issues_server.py"]}
+  },
+  "contextWindow": 32768,
+  "maxSteps": 40
+}

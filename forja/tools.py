@@ -1,9 +1,9 @@
-"""LAB 02a — El registro de tools (decorador @tool, JSON Schema, ejecución segura).
+"""LAB 02a — The tool registry (@tool decorator, JSON Schema, safe execution).
 
-Tres clases de riesgo, que usan los permisos (lab 04) y el paralelismo (lab 03):
-  read  -> solo lee (read_file, grep, glob): se puede ejecutar en paralelo y sin preguntar
-  edit  -> modifica ficheros del proyecto (write_file, edit_file)
-  exec  -> efectos arbitrarios (bash, MCP): siempre pasa por permisos
+Three risk classes, used by permissions (lab 04) and parallelism (lab 03):
+  read  -> only reads (read_file, grep, glob): can run in parallel and without asking
+  edit  -> modifies project files (write_file, edit_file)
+  exec  -> arbitrary effects (bash, MCP): always goes through permissions
 """
 from __future__ import annotations
 
@@ -25,8 +25,8 @@ MAX_OUTPUT_CHARS = 30_000
 
 @dataclass
 class ToolOutput:
-    """Lo que devuelve una tool cuando además del texto para el modelo quiere pasar
-    metadatos a la interfaz (p. ej. el diff de una edición)."""
+    """What a tool returns when, besides the text for the model, it wants to pass
+    metadata to the UI (e.g. the diff of an edit)."""
 
     text: str
     meta: dict[str, Any] = field(default_factory=dict)
@@ -43,7 +43,7 @@ def _param_docs(doc: str) -> dict[str, str]:
 
 
 def _description(doc: str) -> str:
-    """Todo el docstring hasta 'Args:' — en un agente de código la descripción larga importa."""
+    """The whole docstring up to 'Args:' — in a coding agent the long description matters."""
     return re.split(r"\n\s*Args:", (doc or "").strip())[0].strip()
 
 
@@ -55,13 +55,13 @@ class Tool:
     args_model: type[BaseModel]
     risk: Risk = "read"
 
-    # ---- TODO 02.1 : schema OpenAI desde el modelo pydantic -------------
+    # ---- TODO 02.1 : OpenAI schema from the pydantic model --------------
     def schema(self) -> dict[str, Any]:
-        # TODO 02.1: self.args_model.model_json_schema(); quita 'title' de la raíz y de cada property; additionalProperties=False. Devuelve {'type':'function','function':{name, description, parameters}}.
+        # TODO 02.1: self.args_model.model_json_schema(); remove 'title' from the root and from every property; additionalProperties=False. Return {'type':'function','function':{name, description, parameters}}.
         raise NotImplementedError("TODO 02.1")
 
     def subject(self, args: dict[str, Any]) -> str:
-        """Lo que se compara con las reglas de permisos: el comando o la ruta."""
+        """What is matched against permission rules: the command or the path."""
         for key in ("command", "path", "pattern", "name"):
             if key in args:
                 return str(args[key])
@@ -69,7 +69,7 @@ class Tool:
 
 
 def tool(fn: Callable[..., Any] | None = None, *, name: str | None = None, risk: Risk = "read"):
-    """@tool o @tool(risk="edit"). Type hints + docstring -> schema + validador."""
+    """@tool or @tool(risk="edit"). Type hints + docstring -> schema + validator."""
 
     def wrap(f: Callable[..., Any]) -> Tool:
         hints = get_type_hints(f)
@@ -101,7 +101,7 @@ def _truncate(text: str) -> str:
     if len(text) <= MAX_OUTPUT_CHARS:
         return text
     half = MAX_OUTPUT_CHARS // 2
-    return f"{text[:half]}\n\n…[{len(text) - MAX_OUTPUT_CHARS} caracteres omitidos]…\n\n{text[-half:]}"
+    return f"{text[:half]}\n\n…[{len(text) - MAX_OUTPUT_CHARS} characters omitted]…\n\n{text[-half:]}"
 
 
 @dataclass
@@ -111,7 +111,7 @@ class ToolRegistry:
     def register(self, *tools: Tool) -> ToolRegistry:
         for t in tools:
             if t.name in self.tools:
-                raise ValueError(f"tool duplicada: {t.name}")
+                raise ValueError(f"duplicate tool: {t.name}")
             self.tools[t.name] = t
         return self
 
@@ -122,22 +122,22 @@ class ToolRegistry:
         return [t.schema() for t in self.tools.values()]
 
     def parse_args(self, call: ToolCall) -> tuple[Tool | None, dict[str, Any] | None, str | None]:
-        """(tool, args validados, error). Lo usa la puerta de permisos ANTES de ejecutar."""
+        """(tool, validated args, error). Used by the permission gate BEFORE executing."""
         t = self.tools.get(call.name)
         if t is None:
-            return None, None, f"ERROR: la tool '{call.name}' no existe. Disponibles: {', '.join(self.tools)}"
+            return None, None, f"ERROR: tool '{call.name}' does not exist. Available: {', '.join(self.tools)}"
         try:
             raw = json.loads(call.arguments or "{}")
             if not isinstance(raw, dict):
-                raise ValueError("los argumentos deben ser un objeto JSON")
+                raise ValueError("arguments must be a JSON object")
             return t, t.args_model.model_validate(raw).model_dump(), None
         except (json.JSONDecodeError, ValueError) as e:
             if isinstance(e, ValidationError):
                 errs = "; ".join(f"{'.'.join(map(str, x['loc']))}: {x['msg']}" for x in e.errors())
-                return t, None, f"ERROR de validación en '{t.name}': {errs}"
-            return t, None, f"ERROR: argumentos no son JSON válido ({e}). Reintenta con un objeto JSON."
+                return t, None, f"Validation ERROR in '{t.name}': {errs}"
+            return t, None, f"ERROR: arguments are not valid JSON ({e}). Retry with a JSON object."
 
-    # ---- TODO 02.2 : ejecutar sin lanzar nunca --------------------------
+    # ---- TODO 02.2 : execute without ever raising -----------------------
     def execute(self, call: ToolCall) -> ToolResult:
-        # TODO 02.2: NUNCA lanza. t, args, err = self.parse_args(call); si err -> ToolResult(ok=False, err). Ejecuta t.fn(**args) capturando cualquier excepción como 'ERROR en ...'. Si devuelve ToolOutput usa .text y .meta; si no, str o JSON. Usa _truncate y mide duration_ms.
+        # TODO 02.2: NEVER raises. t, args, err = self.parse_args(call); if err -> ToolResult(ok=False, err). Run t.fn(**args) catching any exception as 'ERROR in ...'. If it returns ToolOutput use .text and .meta; otherwise str or JSON. Use _truncate and measure duration_ms.
         raise NotImplementedError("TODO 02.2")

@@ -1,34 +1,34 @@
-# Lab 00 · Setup y primer contacto
+# Lab 00 · Setup and first contact
 
-🇬🇧 [English](README.en.md) · Día 1 · 09:00–09:30
+Day 1 · 09:00–09:30
 
-**Objetivo:** Tener Ollama con un modelo que sepa usar tools, el repo instalado y los tests ejecutándose.
+**Goal:** Have Ollama running a tool-capable model, the repo installed and the tests running.
 
-## Conceptos
-- **Qué vamos a construir:** *Forja*, un agente de código de terminal como los comerciales: lee y edita tu proyecto, ejecuta comandos, pide permiso, planifica, delega en subagentes y se extiende con hooks, skills y MCP. Funciona con modelos abiertos en tu máquina.
-- **Agente = modelo + tools + bucle. Harness = todo lo demás** (permisos, contexto, interfaz, sesiones…). El modelo es una pieza intercambiable: el harness es lo que construimos.
-- **Cómo funcionan los labs:** cada lab tiene funciones con `TODO` en `forja/` y tests en `tests/`. Cuando los tests pasan, la capacidad se enciende sola en tu CLI. ¿Te quedas atrás? `python scripts/tasks.py catchup NN`.
-- **Modelos:** `qwen3:8b` (portátil de 16 GB), `qwen3-coder:30b` (Mac de 32 GB o GPU de 24 GB), o el servidor compartido del aula. OpenRouter solo con modelos open-weight.
+## Concepts
+- **What we will build:** *Forja*, a terminal coding agent like the commercial ones: it reads and edits your project, runs commands, asks for permission, plans, delegates to subagents and is extended with hooks, skills and MCP. It runs on open models on your machine.
+- **Agent = model + tools + loop. Harness = everything else** (permissions, context, UI, sessions…). The model is a swappable part: the harness is what we build.
+- **How the labs work:** each lab has `TODO` functions in `forja/` and tests in `tests/`. When the tests pass, the capability lights up in your CLI. Falling behind? `python scripts/tasks.py catchup NN`.
+- **Models:** `qwen3:8b` (16 GB laptop), `qwen3-coder:30b` (32 GB Mac or 24 GB GPU), or the room's shared server. OpenRouter with open-weight models only.
 
-## Lo que implementas
-Este lab no tiene TODOs.
+## What you implement
+This lab has no TODOs.
 
-## Ejecuta
+## Run
 ```bash
 python -m venv .venv
 .venv\Scripts\activate            # Windows   (Linux/macOS: source .venv/bin/activate)
-python scripts/tasks.py setup      # instala y crea .env
-ollama pull qwen3:8b               # o el modelo de tu nivel de hardware
-python scripts/tasks.py test       # casi todo en rojo: es lo esperado
-cd playground && python -m pytest -q   # 3 tests fallan: trabajo para tu agente
+python scripts/tasks.py setup      # installs and creates .env
+ollama pull qwen3:8b               # or the model for your hardware tier
+python scripts/tasks.py test       # almost everything red: that's expected
+cd playground && python -m pytest -q   # 3 tests fail: work for your agent
 ```
 
 ## Checkpoint
-`ollama run qwen3:8b "hola"` responde y `python scripts/tasks.py test` se ejecuta (en rojo, como debe ser). El tutor enseña `python scripts/tasks.py demo`: así será tu agente al final del día 2.
+`ollama run qwen3:8b "hello"` answers and `python scripts/tasks.py test` runs (red, as it should). The tutor shows `python scripts/tasks.py demo`: that is what your agent will look like at the end of day 2.
 
-## Retos
-1. Ejecuta `ollama ps` mientras el modelo responde: ¿va en GPU o CPU? ¿Cuánta memoria usa?
-2. Lee `forja/harness.py` por encima: localiza la «puerta» por la que pasa cada tool call.
+## Challenges
+1. Run `ollama ps` while the model answers: GPU or CPU? How much memory?
+2. Skim `forja/harness.py`: find the “gate” every tool call goes through.
 
 ---
-[siguiente →](../L01_llm_streaming/README.md)
+[next →](../L01_llm_streaming/README.md)

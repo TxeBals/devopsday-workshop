@@ -1,14 +1,14 @@
-"""LAB 05 — La interfaz: tu propio agente de terminal.
+"""LAB 05 — The interface: your own terminal agent.
 
-    forja                         # REPL interactivo en el directorio actual
-    forja -p "arregla el test"    # modo headless (scripts, CI, evals): imprime la respuesta y sale
-    forja --mode plan             # empezar en modo plan
-    forja --resume <id>           # reanudar una sesión
-    forja doctor                  # comprobar entorno y modelo
+    forja                         # interactive REPL in the current directory
+    forja -p "fix the test"       # headless mode (scripts, CI, evals): prints the answer and exits
+    forja --mode plan             # start in plan mode
+    forja --resume <id>           # resume a session
+    forja doctor                  # check environment and model
 
-La mayor parte es "fontanería" de interfaz y viene dada. Los TODO de este lab son las
-piezas que deciden la experiencia: cómo se resume una tool call, cómo se pinta un diff,
-cómo se pide aprobación y qué hacen los comandos slash.
+Most of this is UI "plumbing" and is provided. The TODOs in this lab are the pieces
+that shape the experience: how a tool call is summarised, how a diff is rendered,
+how approval is requested and what the slash commands do.
 """
 from __future__ import annotations
 
@@ -36,17 +36,17 @@ from .types import ChatResponse, ToolCall
 console = Console(highlight=False)
 
 
-# ---- TODO 05.1 : resumir una tool call en una línea --------------------------
+# ---- TODO 05.1 : summarise a tool call in one line ----------------------------
 def summarize_call(name: str, args: dict[str, Any], width: int = 100) -> str:
-    """read_file {path} -> 'Read src/app.py'; bash -> '$ pytest -q'; grep -> "Grep 'patrón' en src"…"""
-    # TODO 05.1: Una línea legible por tool: 'Read ruta' (+ ' (desde línea N)' si offset != 1), 'Write ruta (N líneas)', 'Edit ruta', '$ comando', "Grep 'patrón' en ruta (include)", 'Glob patrón', 'Task[tipo] descripción', 'Todos (N)', resto 'nombre(k=v, …)'. Colapsa espacios y corta a `width` con '…'.
+    """read_file {path} -> 'Read src/app.py'; bash -> '$ pytest -q'; grep -> "Grep 'pattern' in src"…"""
+    # TODO 05.1: One readable line per tool: 'Read path' (+ ' (from line N)' if offset != 1), 'Write path (N lines)', 'Edit path', '$ command', "Grep 'pattern' in path (include)", 'Glob pattern', 'Task[type] description', 'Todos (N)', others 'name(k=v, …)'. Collapse whitespace and cut to `width` with '…'.
     raise NotImplementedError("TODO 05.1")
 
 
-# ---- TODO 05.2 : estilos por línea de un diff unificado ----------------------
+# ---- TODO 05.2 : per-line styles for a unified diff ---------------------------
 def diff_styles(diff: str) -> list[tuple[str, str]]:
-    """[(línea, estilo rich)]: cabeceras en negrita, hunks en cian, + en verde, - en rojo, contexto atenuado."""
-    # TODO 05.2: Por línea: '+++'/'---' -> 'bold'; '@@' -> 'cyan'; '+' -> 'green'; '-' -> 'red'; resto -> 'dim'. Devuelve [(línea, estilo)].
+    """[(line, rich style)]: headers bold, hunks cyan, + green, - red, context dimmed."""
+    # TODO 05.2: Per line: '+++'/'---' -> 'bold'; '@@' -> 'cyan'; '+' -> 'green'; '-' -> 'red'; the rest -> 'dim'. Return [(line, style)].
     raise NotImplementedError("TODO 05.2")
 
 
@@ -59,7 +59,7 @@ def parse_args_json(call: ToolCall) -> dict[str, Any]:
 
 
 def _safe(fn, *a, default=None):
-    """Mientras el lab 05 no esté hecho, la interfaz usa una versión mínima."""
+    """Until lab 05 is done, the UI uses a minimal version."""
     try:
         return fn(*a)
     except NotImplementedError:
@@ -101,38 +101,38 @@ class RichEvents(Events):
             console.print(Panel(body, title=result.meta.get("path"), border_style="dim", expand=False))
         else:
             n = len(result.output.splitlines())
-            console.print(Text(f"{self.prefix}  ⎿ {first}" + (f"  (+{n - 1} líneas)" if n > 1 else ""), style="dim"))
+            console.print(Text(f"{self.prefix}  ⎿ {first}" + (f"  (+{n - 1} lines)" if n > 1 else ""), style="dim"))
 
 
-# ---- TODO 05.3 : pedir aprobación ---------------------------------------------
+# ---- TODO 05.3 : ask for approval ---------------------------------------------
 def ask_approval(tool: Tool, args: dict[str, Any], reason: str, read: Any = input) -> Approval:
-    """Muestra qué se va a hacer y pregunta. s/y = sí, n = no, a = siempre (añade regla). Vacío = no."""
-    # TODO 05.3: Pinta un Panel con summarize_call y el motivo. Lee la respuesta con read(...): s/si/sí/y/yes -> 'yes'; a/always/siempre -> 'always'; cualquier otra cosa (incluido vacío) -> 'no'.
+    """Shows what is about to happen and asks. y = yes, n = no, a = always (adds a rule). Empty = no."""
+    # TODO 05.3: Draw a Panel with summarize_call and the reason. Read the answer with read(...): y/yes -> 'yes'; a/always -> 'always'; anything else (including empty) -> 'no'.
     raise NotImplementedError("TODO 05.3")
 
 
 def ask_plan(plan: str, read: Any = input) -> bool:
-    console.print(Panel(Markdown(plan), title="Plan propuesto", border_style="magenta"))
-    return str(read("  ¿Aprobar el plan y empezar? [s/N] > ")).strip().lower() in ("s", "si", "sí", "y", "yes")
+    console.print(Panel(Markdown(plan), title="Proposed plan", border_style="magenta"))
+    return str(read("  Approve the plan and start? [y/N] > ")).strip().lower() in ("y", "yes")
 
 
-HELP = """/help                 esta ayuda
-/mode [modo]          ver o cambiar modo: default | accept_edits | plan | bypass
-/tools                tools disponibles
-/todos                lista de tareas del agente
-/context              tokens estimados del contexto
-/compact              compactar ahora
-/cost                 tokens consumidos en la sesión
-/undo                 deshacer los cambios de ficheros del último turno
-/sessions             sesiones guardadas
-/clear                empezar conversación nueva
-/exit                 salir"""
+HELP = """/help                 this help
+/mode [mode]          show or change mode: default | accept_edits | plan | bypass
+/tools                available tools
+/todos                the agent's task list
+/context              estimated context tokens
+/compact              compact now
+/cost                 tokens used in this session
+/undo                 undo the file changes from the last turn
+/sessions             saved sessions
+/clear                start a new conversation
+/exit                 quit"""
 
 
-# ---- TODO 05.4 : comandos slash ------------------------------------------------
+# ---- TODO 05.4 : slash commands ------------------------------------------------
 def handle_slash(app: Forja, line: str) -> str | None:
-    """Devuelve el texto a mostrar, o None si el comando es /exit."""
-    # TODO 05.4: Separa comando y argumento. /exit -> None. /help -> HELP. /mode [m] (app.set_mode). /tools (nombre [riesgo]). /todos (app.todos.render()). /context (app.context_tokens()). /compact (app.compact_now(force=True)). /cost (app.usage). /undo (app.undo()). /sessions (Transcript.list_sessions). /clear. Desconocido -> mensaje.
+    """Returns the text to display, or None if the command is /exit."""
+    # TODO 05.4: Split command and argument. /exit -> None. /help -> HELP. /mode [m] (app.set_mode). /tools (name [risk]). /todos (app.todos.render()). /context (app.context_tokens()). /compact (app.compact_now(force=True)). /cost (app.usage). /undo (app.undo()). /sessions (Transcript.list_sessions). /clear. Unknown -> message.
     raise NotImplementedError("TODO 05.4")
 
 
@@ -148,41 +148,41 @@ def build_app(a: argparse.Namespace, interactive: bool) -> Forja:
 
 
 def doctor(a: argparse.Namespace) -> int:
-    """Comprueba backend y soporte de tools SIN depender del lab 01 (usa el SDK openai directamente)."""
+    """Checks the backend and tool support WITHOUT depending on lab 01 (uses the openai SDK directly)."""
     import time
 
     from openai import OpenAI
 
     b = backend_from_env(a.backend, a.model)
-    console.print(f"backend={b.name} url={b.base_url} modelo={b.model}")
-    tool = {"type": "function", "function": {"name": "ping", "description": "Responde pong", "parameters": {"type": "object", "properties": {}}}}
+    console.print(f"backend={b.name} url={b.base_url} model={b.model}")
+    tool = {"type": "function", "function": {"name": "ping", "description": "Replies pong", "parameters": {"type": "object", "properties": {}}}}
     client = OpenAI(base_url=b.base_url, api_key=b.api_key or "x", default_headers=b.extra_headers, timeout=300)
     t0 = time.time()
     try:
-        r = client.chat.completions.create(model=b.model, messages=[{"role": "user", "content": "Llama a la tool ping."}],
+        r = client.chat.completions.create(model=b.model, messages=[{"role": "user", "content": "Call the ping tool."}],
                                            tools=[tool], extra_body=b.extra_body or None)
     except Exception as e:  # noqa: BLE001
-        console.print(f"[red]✘ no se pudo hablar con el modelo: {type(e).__name__}: {e}[/red]")
+        console.print(f"[red]✘ could not talk to the model: {type(e).__name__}: {e}[/red]")
         return 1
     dt = time.time() - t0
     msg = r.choices[0].message
     toks = getattr(r.usage, "completion_tokens", None) if r.usage else None
-    speed = f" · {toks / dt:.0f} tok/s aprox. (incluye carga)" if toks else ""
-    console.print(f"[dim]respuesta en {dt:.1f}s{speed}[/dim]")
+    speed = f" · ~{toks / dt:.0f} tok/s (includes loading)" if toks else ""
+    console.print(f"[dim]answered in {dt:.1f}s{speed}[/dim]")
     if msg.tool_calls:
-        console.print(f"[green]✔ el modelo llama tools ({msg.tool_calls[0].function.name})[/green]")
+        console.print(f"[green]✔ the model calls tools ({msg.tool_calls[0].function.name})[/green]")
         return 0
-    console.print(f"[yellow]! el modelo respondió sin llamar a la tool: {msg.content!r}. Prueba otro modelo.[/yellow]")
+    console.print(f"[yellow]! the model answered without calling the tool: {msg.content!r}. Try another model.[/yellow]")
     return 2
 
 
 def repl(app: Forja) -> None:
-    console.print(Panel(f"[bold]Forja {__version__}[/bold] · {app.llm.model} · modo [cyan]{app.mode}[/cyan]\n{app.root}\n/help para comandos · Ctrl+C interrumpe",
+    console.print(Panel(f"[bold]Forja {__version__}[/bold] · {app.llm.model} · mode [cyan]{app.mode}[/cyan]\n{app.root}\n/help for commands · Ctrl+C interrupts",
                         border_style="cyan", expand=False))
 
-    def on_sigint(sig, frame):  # Ctrl+C durante un turno: parar en la siguiente frontera
+    def on_sigint(sig, frame):  # Ctrl+C during a turn: stop at the next boundary
         app.cancel.set()
-        console.print("\n[yellow]interrumpiendo…[/yellow]")
+        console.print("\n[yellow]interrupting…[/yellow]")
 
     while True:
         for n in app.notes:
@@ -215,14 +215,14 @@ def repl(app: Forja) -> None:
             signal.signal(signal.SIGINT, old)
         if r.stop_reason != "final":
             console.print(f"[yellow]{r.answer}[/yellow]")
-        console.print(f"[dim]({r.steps} pasos · {r.tool_calls} tools)[/dim]")
+        console.print(f"[dim]({r.steps} steps · {r.tool_calls} tools)[/dim]")
     app.close()
 
 
 def main(argv: list[str] | None = None) -> int:
-    ap = argparse.ArgumentParser(prog="forja", description="Tu agente de código con modelos abiertos")
-    ap.add_argument("command", nargs="?", choices=["doctor"], help="subcomando opcional")
-    ap.add_argument("-p", "--print", dest="prompt", help="modo headless: ejecuta un prompt y sale")
+    ap = argparse.ArgumentParser(prog="forja", description="Your coding agent on open models")
+    ap.add_argument("command", nargs="?", choices=["doctor"], help="optional subcommand")
+    ap.add_argument("-p", "--print", dest="prompt", help="headless mode: run one prompt and exit")
     ap.add_argument("--mode", choices=MODES, default="default")
     ap.add_argument("--backend", choices=["ollama", "openai_compat", "openrouter"])
     ap.add_argument("--model")

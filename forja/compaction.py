@@ -1,14 +1,14 @@
-"""LAB 07 — Gestión de contexto: que una sesión larga quepa en una ventana pequeña.
+"""LAB 07 — Context management: fitting a long session into a small window.
 
-Un modelo local típico trabaja con 16–32k tokens. Un agente de código los llena rápido:
-cada read_file, cada salida de pytest… Dos niveles, del más barato al más caro:
+A typical local model works with 16–32k tokens. A coding agent fills them fast:
+every read_file, every pytest output… Two levels, from cheapest to most expensive:
 
-  1. Microcompactación (sin LLM): vaciar las salidas de tools ANTIGUAS. El modelo ya las usó;
-     si las necesita, puede volver a leer el fichero.
-  2. Compactación completa (1 llamada al LLM): resumir los turnos antiguos y conservar los recientes.
+  1. Microcompaction (no LLM): blank OLD tool outputs. The model already used them;
+     if it needs them, it can read the file again.
+  2. Full compaction (1 LLM call): summarise the old turns and keep the recent ones.
 
-Invariante sagrado: nunca separar un mensaje assistant con tool_calls de sus mensajes tool.
-Solo se corta justo antes de un mensaje 'user'.
+Sacred invariant: never separate an assistant message with tool_calls from its tool messages.
+Only cut right before a 'user' message.
 """
 from __future__ import annotations
 
@@ -17,20 +17,20 @@ from typing import Any
 
 from .types import ChatModel
 
-SUMMARY_PROMPT = """Resume esta sesión de trabajo de un agente de código para poder continuarla sin el historial.
-Incluye, en este orden y sin inventar nada:
-1. Objetivo del usuario y peticiones explícitas.
-2. Ficheros relevantes y qué se ha cambiado en cada uno (rutas exactas).
-3. Comandos ejecutados y su resultado (tests que pasan/fallan, errores importantes).
-4. Decisiones tomadas y por qué.
-5. Tareas pendientes y siguiente paso.
-Máximo 300 palabras."""
+SUMMARY_PROMPT = """Summarise this coding-agent work session so it can be continued without the history.
+Include, in this order and without inventing anything:
+1. The user's goal and explicit requests.
+2. Relevant files and what was changed in each (exact paths).
+3. Commands run and their results (passing/failing tests, important errors).
+4. Decisions taken and why.
+5. Pending tasks and the next step.
+300 words maximum."""
 
-CLEARED = "[salida antigua eliminada para ahorrar contexto; vuelve a ejecutar la tool si la necesitas]"
+CLEARED = "[old tool result cleared]"
 
 
 def estimate_tokens(messages: list[dict[str, Any]]) -> int:
-    """~4 caracteres por token. Barato y suficiente para decidir cuándo compactar."""
+    """~4 characters per token. Cheap and good enough to decide when to compact."""
     return sum(len(json.dumps(m, ensure_ascii=False)) for m in messages) // 4
 
 
@@ -38,18 +38,18 @@ def user_turn_starts(history: list[dict[str, Any]]) -> list[int]:
     return [i for i, m in enumerate(history) if m["role"] == "user"]
 
 
-# ---- TODO 07.1 : microcompactación ---------------------------------------
+# ---- TODO 07.1 : microcompaction -----------------------------------------
 def microcompact(history: list[dict[str, Any]], keep_recent_turns: int = 2, min_chars: int = 500) -> int:
-    """Vacía (en sitio) las salidas de tools largas anteriores a los últimos `keep_recent_turns` turnos.
-    Devuelve cuántas ha vaciado."""
-    # TODO 07.1: starts = user_turn_starts(history). Si hay <= keep_recent_turns turnos, 0. Si no, para los mensajes ANTERIORES a starts[-keep_recent_turns]: los 'tool' con contenido >= min_chars y no vaciados -> content = CLEARED. Devuelve cuántos.
+    """Blanks (in place) long tool outputs older than the last `keep_recent_turns` turns.
+    Returns how many were blanked."""
+    # TODO 07.1: starts = user_turn_starts(history). If there are <= keep_recent_turns turns, 0. Otherwise, for the messages BEFORE starts[-keep_recent_turns]: 'tool' messages with content >= min_chars not yet cleared -> content = CLEARED. Return how many.
     raise NotImplementedError("TODO 07.1")
 
 
-# ---- TODO 07.2 : compactación completa con resumen ---------------------------
+# ---- TODO 07.2 : full compaction with a summary ------------------------------
 def compact(history: list[dict[str, Any]], llm: ChatModel, keep_recent_turns: int = 2) -> tuple[list[dict[str, Any]], bool]:
-    """Devuelve (nuevo_historial, compactado?). Resume todo lo anterior a los últimos turnos."""
-    # TODO 07.2: Corta SOLO en un inicio de turno de usuario dejando keep_recent_turns turnos. Convierte lo antiguo en texto (rol, contenido, tools llamadas, resultados truncados), pide el resumen con SUMMARY_PROMPT (temperature=0) y devuelve ([user: '[Resumen de la sesión anterior]\n…', assistant: ack, *recientes], True).
+    """Returns (new_history, compacted?). Summarises everything before the last turns."""
+    # TODO 07.2: Cut ONLY at the start of a user turn, keeping keep_recent_turns turns. Turn the old part into text (role, content, tools called, truncated results), ask for the summary with SUMMARY_PROMPT (temperature=0) and return ([user: '[Summary of the previous session]\n…', assistant: ack, *recent], True).
     raise NotImplementedError("TODO 07.2")
 
 

@@ -1,17 +1,16 @@
-"""LAB 10b — Skills: conocimiento bajo demanda (divulgación progresiva).
+"""LAB 10b — Skills: on-demand knowledge (progressive disclosure).
 
-Meter todas las guías del equipo en el system prompt gasta contexto en cada turno.
-Una skill es una carpeta con SKILL.md (frontmatter name + description + cuerpo). En el
-prompt solo va el CATÁLOGO (una línea por skill); el cuerpo se carga con la tool `skill`
-cuando el modelo decide que lo necesita. Mismo formato que usan otras herramientas: las
-skills son portables.
+Putting all the team's guides in the system prompt spends context on every turn.
+A skill is a folder with SKILL.md (frontmatter name + description + body). Only the
+CATALOGUE goes in the prompt (one line per skill); the body is loaded with the `skill` tool
+when the model decides it needs it. Same format other tools use: skills are portable.
 
     .forja/skills/conventional-commits/SKILL.md
     ---
     name: conventional-commits
-    description: Cómo escribir mensajes de commit en este repo. Úsala antes de hacer git commit.
+    description: How to write commit messages in this repo. Use it before running git commit.
     ---
-    Formato: <tipo>(<ámbito>): <resumen en imperativo>…
+    Format: <type>(<scope>): <imperative summary>…
 """
 from __future__ import annotations
 
@@ -33,10 +32,10 @@ class Skill:
     path: Path
 
 
-# ---- TODO 10.3 : descubrir skills ------------------------------------------
+# ---- TODO 10.3 : discover skills -------------------------------------------
 def discover_skills(*folders: Path) -> dict[str, Skill]:
-    """Busca <carpeta>/<skill>/SKILL.md. Si dos carpetas definen la misma skill, gana la última (proyecto > usuario)."""
-    # TODO 10.3: Para cada carpeta existente: */SKILL.md ordenados; FRONTMATTER + yaml; exige name y description (normaliza espacios). Las carpetas posteriores sobrescriben a las anteriores.
+    """Looks for <folder>/<skill>/SKILL.md. If two folders define the same skill, the last one wins (project > user)."""
+    # TODO 10.3: For each existing folder: */SKILL.md sorted; FRONTMATTER + yaml; require name and description (normalise whitespace). Later folders override earlier ones.
     raise NotImplementedError("TODO 10.3")
 
 
@@ -44,19 +43,19 @@ def catalog(skills: dict[str, Skill]) -> str:
     if not skills:
         return ""
     lines = "\n".join(f"- {s.name}: {s.description}" for s in skills.values())
-    return f"## Skills disponibles (cárgalas con la tool skill cuando apliquen)\n{lines}"
+    return f"## Available skills (load them with the skill tool when they apply)\n{lines}"
 
 
-# ---- TODO 10.4 : la tool que carga una skill ---------------------------------
+# ---- TODO 10.4 : the tool that loads a skill ---------------------------------
 def make_skill_tool(skills: dict[str, Skill]) -> Tool:
     @tool(risk="read")
     def skill(name: str) -> str:
-        """Carga las instrucciones completas de una skill del catálogo.
+        """Loads the full instructions of a skill from the catalogue.
 
         Args:
-            name: Nombre de la skill.
+            name: Name of the skill.
         """
-        # TODO 10.4: Skill desconocida -> ValueError con las disponibles. Devuelve '# Skill: nombre', la carpeta y el CUERPO sin frontmatter.
+        # TODO 10.4: Unknown skill -> ValueError listing the available ones. Return '# Skill: name', the folder and the BODY without frontmatter.
         raise NotImplementedError("TODO 10.4")
 
     return skill

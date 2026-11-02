@@ -1,40 +1,40 @@
-# Lab 05 · La CLI: tu agente de terminal
+# Lab 05 · The CLI: your terminal agent
 
-🇬🇧 [English](README.en.md) · Día 1 · 14:00–15:00
+Day 1 · 14:00–15:00
 
-**Objetivo:** Convertir el harness en una herramienta agradable: streaming, resumen de acciones, diffs, aprobaciones y comandos slash.
+**Goal:** Turn the harness into a pleasant tool: streaming, action summaries, diffs, approvals and slash commands.
 
-## Conceptos
-- **La experiencia es parte del producto:** el usuario tiene que ver QUÉ hace el agente (una línea por tool), CÓMO cambia el código (diff) y poder pararlo (Ctrl+C) o corregirlo.
-- **Aprobaciones claras:** qué se va a ejecutar, por qué se pregunta (motivo de la decisión) y tres respuestas: sí, no, siempre.
-- **Comandos slash:** `/mode`, `/tools`, `/todos`, `/context`, `/compact`, `/cost`, `/undo`, `/sessions`, `/clear`. Operan sobre el harness sin pasar por el modelo.
-- **Headless:** `forja -p "…"` ejecuta y sale: scripts, CI y evals (lab 12). Sin usuario, lo que pide permiso se deniega.
+## Concepts
+- **Experience is part of the product:** the user must see WHAT the agent does (one line per tool), HOW the code changes (diff) and be able to stop it (Ctrl+C) or correct it.
+- **Clear approvals:** what will run, why it's being asked (decision reason) and three answers: `y` (yes), `n` (no), `a` (always).
+- **Slash commands:** `/mode`, `/tools`, `/todos`, `/context`, `/compact`, `/cost`, `/undo`, `/sessions`, `/clear`. They act on the harness without going through the model.
+- **Headless:** `forja -p "…"` runs and exits: scripts, CI and evals (lab 12). With no user, anything needing approval is denied.
 
-## Lo que implementas
-| TODO | Fichero | Qué |
+## What you implement
+| TODO | File | What |
 |---|---|---|
-| 05.1 | `forja/cli.py` | summarize_call: una línea legible por tool call |
-| 05.2 | `forja/cli.py` | diff_styles: colorear el diff |
-| 05.3 | `forja/cli.py` | ask_approval: sí / no / siempre |
-| 05.4 | `forja/cli.py` | handle_slash: comandos slash |
+| 05.1 | `forja/cli.py` | summarize_call: one readable line per tool call |
+| 05.2 | `forja/cli.py` | diff_styles: colour the diff |
+| 05.3 | `forja/cli.py` | ask_approval: y / n / a (yes / no / always) |
+| 05.4 | `forja/cli.py` | handle_slash: slash commands |
 
-## Ejecuta
+## Run
 ```bash
 python scripts/tasks.py test 05
 forja --cwd playground --mode accept_edits
-> arregla el bug del redondeo de importes y comprueba con los tests
+> fix the amount rounding bug and check with the tests
 /tools
 /cost
 ```
 
 ## Checkpoint
-**Hito del día 1** (15:15): Forja arregla los 3 tests que fallan en `playground/` con tu modelo local. Compara con el compañero que usa otro modelo.
+**Day 1 milestone** (15:15): Forja fixes the 3 failing tests in `playground/` with your local model. Compare with a neighbour using another model.
 
-## Retos
-1. Añade `/model <nombre>` para cambiar de modelo en caliente.
-2. Muestra en el prompt de la REPL el % de contexto usado.
+## Challenges
+1. Add `/model <name>` to switch models on the fly.
+2. Show the % of context used in the REPL prompt.
 
-**Tests:** `tests/test_l05_cli.py` · **¿Te has quedado atrás?** `python scripts/tasks.py catchup 06`
+**Tests:** `tests/test_l05_cli.py` · **Fallen behind?** `python scripts/tasks.py catchup 06`
 
 ---
-[← anterior](../L04_bash_permisos/README.md) · [siguiente →](../L06_contexto/README.md)
+[← previous](../L04_bash_permissions/README.md) · [next →](../L06_context/README.md)

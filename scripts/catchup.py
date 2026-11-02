@@ -1,14 +1,14 @@
-"""¿Te has quedado atrás? Copia las soluciones de los labs ANTERIORES al que indiques.
+"""Fallen behind? Copies the solutions of the labs BEFORE the one you give.
 
-Las soluciones NO están en el repo: el tutor te pasa `forja-solutions.zip` cuando lo necesites.
-Déjalo en la raíz del repo (o indica dónde está con --from).
+The solutions are NOT in the student repo: the tutor hands out `forja-solutions.zip` when you need it.
+Put it in the repo root (or point to it with --from).
 
-    python scripts/catchup.py 05                      # resuelve 01-04 y tú sigues con el 05
+    python scripts/catchup.py 05          # solves 01-04 and you carry on with 05
     python scripts/catchup.py 05 --from D:/forja-solutions.zip
     python scripts/catchup.py 05 --dry-run
-    python scripts/catchup.py end                     # todo resuelto
+    python scripts/catchup.py end         # everything solved
 
-Antes de sobrescribir guarda tus ficheros en .catchup_backup/<hora>/.
+Before overwriting, it saves your files in .catchup_backup/<time>/.
 """
 from __future__ import annotations
 
@@ -37,11 +37,10 @@ ORDER = list(LAB_FILES) + ["end"]
 
 
 def find_source(explicit: str | None):
-    """Devuelve una función nombre_fichero -> bytes, buscando las soluciones en este orden:
-    --from, $FORJA_SOLUTIONS_SRC, ./forja-solutions.zip, ./solutions/forja/."""
+    """Return (where, read) looking for solutions in: --from, $FORJA_SOLUTIONS_SRC,
+    ./forja-solutions.zip, ./solutions/forja/."""
     import os
-    candidates = [explicit, os.getenv("FORJA_SOLUTIONS_SRC"), str(ROOT / "forja-solutions.zip"), str(ROOT / "solutions" / "forja")]
-    for c in candidates:
+    for c in (explicit, os.getenv("FORJA_SOLUTIONS_SRC"), str(ROOT / "forja-solutions.zip"), str(ROOT / "solutions" / "forja")):
         if not c:
             continue
         p = Path(c)
@@ -52,21 +51,21 @@ def find_source(explicit: str | None):
         if p.is_dir():
             d = p / "forja" if (p / "forja").is_dir() else p
             return str(d), lambda f: (d / f).read_bytes()
-    raise SystemExit("No encuentro las soluciones. Pide al tutor `forja-solutions.zip` y déjalo en la raíz "
-                     "del repo, o usa --from <ruta al zip o carpeta>.")
+    raise SystemExit("Solutions not found. Ask the tutor for `forja-solutions.zip` and put it in the repo root, "
+                     "or use --from <path to the zip or folder>.")
 
 
 def main() -> None:
     ap = argparse.ArgumentParser()
-    ap.add_argument("lab", help="lab en el que empiezas (01-12) o 'end'")
+    ap.add_argument("lab", help="lab you start at (01-12) or 'end'")
     ap.add_argument("--dry-run", action="store_true")
-    ap.add_argument("--from", dest="src", help="zip o carpeta con las soluciones")
+    ap.add_argument("--from", dest="src", help="zip or folder with the solutions")
     a = ap.parse_args()
     target = a.lab.zfill(2) if a.lab.isdigit() else a.lab.lower()
     if target not in ORDER:
-        raise SystemExit(f"lab desconocido: {a.lab}. Opciones: {', '.join(ORDER)}")
+        raise SystemExit(f"unknown lab: {a.lab}. Options: {', '.join(ORDER)}")
     where, read = find_source(a.src)
-    print(f"soluciones: {where}")
+    print(f"solutions: {where}")
     backup = ROOT / ".catchup_backup" / time.strftime("%H%M%S")
     for lab in ORDER[: ORDER.index(target)]:
         for f in LAB_FILES[lab]:
@@ -79,7 +78,7 @@ def main() -> None:
                 shutil.copy2(dst, backup / f)
             dst.write_bytes(read(f))
     if backup.exists():
-        print(f"tus versiones anteriores: {backup.relative_to(ROOT)}")
+        print(f"your previous versions: {backup.relative_to(ROOT)}")
 
 
 if __name__ == "__main__":

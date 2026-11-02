@@ -1,16 +1,16 @@
-"""LAB 10a — Hooks: política determinista alrededor de un modelo probabilístico.
+"""LAB 10a — Hooks: deterministic policy around a probabilistic model.
 
-AGENTS.md *pide* ("ejecuta los tests"); un hook *garantiza*. Los hooks son comandos de
-shell configurados en .forja/settings.json que el harness ejecuta en puntos fijos:
+AGENTS.md *asks* ("run the tests"); a hook *guarantees*. Hooks are shell commands
+configured in .forja/settings.json that the harness runs at fixed points:
 
-    PreToolUse        antes de ejecutar una tool          exit 2 => se BLOQUEA (stderr va al modelo)
-    PostToolUse       después de ejecutarla               exit 2 => stderr se añade al resultado (feedback)
-    UserPromptSubmit  al enviar un mensaje                exit 2 => se bloquea; stdout se añade como contexto
-    Stop              cuando el agente cree que ha terminado  exit 2 => sigue trabajando con stderr como indicación
+    PreToolUse        before running a tool                 exit 2 => BLOCKED (stderr goes to the model)
+    PostToolUse       after running it                      exit 2 => stderr is appended to the result (feedback)
+    UserPromptSubmit  when a message is sent                exit 2 => blocked; stdout is added as context
+    Stop              when the agent thinks it is done      exit 2 => keeps working with stderr as guidance
 
-Cada hook recibe por stdin un JSON con el evento. Exit 0 = todo bien; exit 2 = bloquear;
-cualquier otro código = error del hook (se avisa, no bloquea). Es la convención que ya usan
-los agentes de código comerciales: si la conocéis, sirve en todos.
+Each hook receives a JSON with the event on stdin. Exit 0 = all good; exit 2 = block;
+any other code = hook error (reported, doesn't block). It's the convention commercial
+coding agents already use: once you know it, it works in all of them.
 
     "hooks": {
       "PreToolUse":  [{"matcher": "bash", "command": "python .forja/hooks/no_secrets.py"}],
@@ -33,8 +33,8 @@ EVENTS = ("PreToolUse", "PostToolUse", "UserPromptSubmit", "Stop")
 @dataclass
 class HookOutcome:
     block: bool = False
-    message: str = ""  # stderr (bloqueo / feedback)
-    context: str = ""  # stdout útil (UserPromptSubmit)
+    message: str = ""  # stderr (block / feedback)
+    context: str = ""  # useful stdout (UserPromptSubmit)
     errors: list[str] = field(default_factory=list)
 
 
@@ -44,12 +44,12 @@ class HookRunner:
     cwd: Path
     timeout: int = 60
 
-    # ---- TODO 10.1 : seleccionar hooks por evento y matcher -------------------
+    # ---- TODO 10.1 : select hooks by event and matcher -------------------------
     def matching(self, event: str, tool_name: str | None = None) -> list[dict[str, Any]]:
-        # TODO 10.1: De self.config[event]: sin matcher -> siempre; con matcher -> solo si hay tool_name y re.fullmatch(matcher, tool_name).
+        # TODO 10.1: From self.config[event]: no matcher -> always; with a matcher -> only if there is a tool_name and re.fullmatch(matcher, tool_name).
         raise NotImplementedError("TODO 10.1")
 
-    # ---- TODO 10.2 : ejecutar y traducir códigos de salida ----------------------
+    # ---- TODO 10.2 : run and map exit codes -------------------------------------
     def run(self, event: str, payload: dict[str, Any], tool_name: str | None = None) -> HookOutcome:
-        # TODO 10.2: Serializa {'hook_event_name', 'cwd', **payload} a JSON. Para cada hook que casa: subprocess.run(command, shell=True, cwd, input=json, capture_output, text, timeout). Exit 2 -> block=True y acumula stderr (o stdout) en message. Exit 0 -> stdout a context. Otro -> errors. TimeoutExpired -> errors.
+        # TODO 10.2: Serialise {'hook_event_name', 'cwd', **payload} to JSON. For each matching hook: subprocess.run(command, shell=True, cwd, input=json, capture_output, text, timeout). Exit 2 -> block=True and accumulate stderr (or stdout) in message. Exit 0 -> stdout to context. Other -> errors. TimeoutExpired -> errors.
         raise NotImplementedError("TODO 10.2")

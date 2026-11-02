@@ -8,3 +8,4 @@ playground/.forja/
 .forja/sessions/
 forja-solutions.zip
 solutions/
+*.egg-info/

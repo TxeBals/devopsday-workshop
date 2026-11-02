@@ -1,4 +1,4 @@
-"""Tipos compartidos (DADO)."""
+"""Shared types (PROVIDED)."""
 from __future__ import annotations
 
 from collections.abc import Iterator
@@ -10,7 +10,7 @@ from typing import Any, Protocol
 class ToolCall:
     id: str
     name: str
-    arguments: str  # JSON crudo, tal cual lo genera el modelo
+    arguments: str  # raw JSON, exactly as the model generates it
 
 
 @dataclass
@@ -31,14 +31,14 @@ class ChatResponse:
 
 @dataclass
 class TextDelta:
-    """Evento de streaming: un trozo de texto visible."""
+    """Streaming event: a piece of visible text."""
 
     text: str
 
 
 @dataclass
 class Done:
-    """Evento de streaming: fin de la respuesta, con todo ensamblado."""
+    """Streaming event: end of the response, fully assembled."""
 
     response: ChatResponse
 

@@ -1,2 +1,2 @@
-"""Forja — tu propio agente de código con modelos abiertos (workshop)."""
+"""Forja — your own coding agent on open models (workshop)."""
 __version__ = "1.0.0"

@@ -7,26 +7,26 @@ from forja.tools import ToolRegistry, tool
 
 
 @tool(risk="read")
-def lento(n: int) -> str:
-    """Tarda."""
+def slow(n: int) -> str:
+    """Takes a while."""
     time.sleep(0.2)
     return f"r{n}"
 
 
 @tool(risk="edit")
-def escribe(x: str) -> str:
-    """Escribe."""
+def write(x: str) -> str:
+    """Writes."""
     return f"w{x}"
 
 
 def reg():
-    return ToolRegistry().register(lento, escribe)
+    return ToolRegistry().register(slow, write)
 
 
 def test_final_answer():
-    msgs = [{"role": "user", "content": "hola"}]
-    r = Agent(FakeLLM([say("hola!")]), reg()).run(msgs)
-    assert (r.answer, r.stop_reason, r.steps) == ("hola!", "final", 1) and msgs[-1]["role"] == "assistant"
+    msgs = [{"role": "user", "content": "hello"}]
+    r = Agent(FakeLLM([say("hello!")]), reg()).run(msgs)
+    assert (r.answer, r.stop_reason, r.steps) == ("hello!", "final", 1) and msgs[-1]["role"] == "assistant"
 
 
 def test_streaming_events():
@@ -36,16 +36,16 @@ def test_streaming_events():
         def on_text(self, d):
             got.append(d)
 
-    Agent(FakeLLM([say("un texto bastante largo")]), reg(), events=E()).run([{"role": "user", "content": "x"}])
-    assert "".join(got) == "un texto bastante largo" and len(got) > 1
+    Agent(FakeLLM([say("a fairly long piece of text")]), reg(), events=E()).run([{"role": "user", "content": "x"}])
+    assert "".join(got) == "a fairly long piece of text" and len(got) > 1
 
 
 def test_parallel_reads_keep_order():
     msgs = [{"role": "user", "content": "x"}]
-    llm = FakeLLM([calls(("lento", {"n": 1}), ("lento", {"n": 2}), ("lento", {"n": 3}), ("escribe", {"x": "a"})), say("ok")])
+    llm = FakeLLM([calls(("slow", {"n": 1}), ("slow", {"n": 2}), ("slow", {"n": 3}), ("write", {"x": "a"})), say("ok")])
     t0 = time.time()
     r = Agent(llm, reg()).run(msgs)
-    assert time.time() - t0 < 0.5  # 3 lecturas de 0,2 s en paralelo
+    assert time.time() - t0 < 0.5  # 3 reads of 0.2 s in parallel
     tools = [m["content"] for m in msgs if m["role"] == "tool"]
     assert tools == ["r1", "r2", "r3", "wa"] and r.tool_calls == 4
     ids = [tc["id"] for tc in msgs[1]["tool_calls"]]
@@ -59,17 +59,17 @@ def test_custom_execute_gate():
         seen.append(c.name)
         return reg().execute(c)
 
-    Agent(FakeLLM([call("escribe", x="b"), say("ok")]), reg(), execute=gate).run([{"role": "user", "content": "x"}])
-    assert seen == ["escribe"]
+    Agent(FakeLLM([call("write", x="b"), say("ok")]), reg(), execute=gate).run([{"role": "user", "content": "x"}])
+    assert seen == ["write"]
 
 
 def test_max_steps_and_loop():
-    r = Agent(FakeLLM([call("escribe", x=str(i)) for i in range(10)]), reg(), max_steps=3).run([{"role": "user", "content": "x"}])
+    r = Agent(FakeLLM([call("write", x=str(i)) for i in range(10)]), reg(), max_steps=3).run([{"role": "user", "content": "x"}])
     assert r.stop_reason == "max_steps"
     msgs = [{"role": "user", "content": "x"}]
-    r = Agent(FakeLLM([call("escribe", x="1") for _ in range(10)]), reg(), max_repeats=2).run(msgs)
+    r = Agent(FakeLLM([call("write", x="1") for _ in range(10)]), reg(), max_repeats=2).run(msgs)
     assert r.stop_reason == "loop"
-    # el historial queda válido: cada tool_call tiene su respuesta
+    # the history stays valid: every tool_call has its response
     last_calls = [tc["id"] for tc in msgs[-2 if msgs[-1]["role"] == "tool" else -1].get("tool_calls", [])] if False else None
     open_ids = set()
     for m in msgs:

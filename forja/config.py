@@ -1,8 +1,8 @@
-"""Configuración de Forja (DADO — no es un TODO).
+"""Forja configuration (PROVIDED — not a TODO).
 
-* Backends: Ollama local, vLLM/LM Studio (cualquier endpoint OpenAI-compatible) y OpenRouter.
-* Política: solo modelos open-weight. Se bloquean ids de Anthropic y OpenAI en código.
-* Settings en capas: ~/.forja/settings.json (usuario) + <proyecto>/.forja/settings.json.
+* Backends: local Ollama, vLLM/LM Studio (any OpenAI-compatible endpoint) and OpenRouter.
+* Policy: open-weight models only. Anthropic and OpenAI ids are blocked in code.
+* Layered settings: ~/.forja/settings.json (user) + <project>/.forja/settings.json.
 """
 from __future__ import annotations
 
@@ -23,7 +23,7 @@ BLOCKED_MODEL_PATTERNS = ("anthropic/", "openai/", "~anthropic", "~openai", "cla
 
 
 class ModelPolicyError(ValueError):
-    """Se intentó usar un modelo fuera de la política del workshop (solo open-weight)."""
+    """Attempt to use a model outside the workshop policy (open-weight only)."""
 
 
 def check_model_allowed(model: str) -> str:
@@ -32,9 +32,9 @@ def check_model_allowed(model: str) -> str:
     for pat in BLOCKED_MODEL_PATTERNS:
         if len(pat) <= 2:
             if name == pat or name.startswith((pat + "-", pat + ":")):
-                raise ModelPolicyError(f"modelo '{model}' bloqueado por política (solo open-weight)")
+                raise ModelPolicyError(f"model '{model}' blocked by policy (open-weight only)")
         elif pat in m:
-            raise ModelPolicyError(f"modelo '{model}' bloqueado por política (solo open-weight)")
+            raise ModelPolicyError(f"model '{model}' blocked by policy (open-weight only)")
     return model
 
 
@@ -61,7 +61,7 @@ def backend_from_env(kind: str | None = None, model: str | None = None) -> Backe
         return Backend("openrouter", "https://openrouter.ai/api/v1", os.getenv("OPENROUTER_API_KEY", ""),
                        check_model_allowed(model or os.getenv("FORJA_MODEL", "deepseek/deepseek-v3.2")),
                        extra_headers={"X-Title": "forja-workshop"}, extra_body={"provider": {"data_collection": "deny"}})
-    raise ValueError(f"backend desconocido: {kind}")
+    raise ValueError(f"unknown backend: {kind}")
 
 
 DEFAULT_DENY = [

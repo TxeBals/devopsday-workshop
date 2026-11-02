@@ -1,6 +1,6 @@
 # Pre-workshop setup checklist · Forja (do this BEFORE the day)
 
-🇪🇸 [Español](checklist_setup.md) · Time: 30–45 min, mostly waiting for downloads. If something fails, send [contact] the output of `forja doctor`.
+Time: 30–45 min, mostly waiting for downloads. If something fails, send [contact] the output of `forja doctor`.
 
 ## 1. Pick your machine tier
 

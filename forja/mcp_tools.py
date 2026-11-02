@@ -1,17 +1,17 @@
-"""LAB 10c — MCP: conectar herramientas externas sin tocar el agente.
+"""LAB 10c — MCP: connect external tools without touching the agent.
 
-Un servidor MCP expone tools (issues, base de datos, wiki, CI…) con un protocolo estándar.
-Forja los arranca según .forja/settings.json y registra sus tools con un nombre con
-espacio de nombres para que no choquen y para poder escribir reglas de permisos:
+An MCP server exposes tools (issues, database, wiki, CI…) over a standard protocol.
+Forja starts them according to .forja/settings.json and registers their tools under a
+namespaced name so they don't collide and so permission rules can be written:
 
     "mcpServers": {
       "issues": {"command": ["python", "examples/mcp/issues_server.py"]},
-      "wiki":   {"url": "https://mcp.miempresa/wiki/mcp", "token_env": "WIKI_TOKEN"}
+      "wiki":   {"url": "https://mcp.mycompany/wiki/mcp", "token_env": "WIKI_TOKEN"}
     }
     -> tools  mcp__issues__list_issues, mcp__issues__get_issue, …
-    -> reglas allow: ["mcp__issues__*"]
+    -> allow rules: ["mcp__issues__*"]
 
-Las tools MCP son de riesgo "exec" por defecto: pasan por permisos como bash.
+MCP tools have "exec" risk by default: they go through permissions like bash.
 """
 from __future__ import annotations
 
@@ -26,16 +26,16 @@ from .tools import Tool
 NAME_RE = re.compile(r"[^a-zA-Z0-9_]")
 
 
-# ---- TODO 10.5 : nombre con espacio de nombres -------------------------------
+# ---- TODO 10.5 : namespaced name ---------------------------------------------
 def mcp_tool_name(server: str, tool: str) -> str:
-    """mcp__<server>__<tool>, solo [a-zA-Z0-9_] (algunos modelos rechazan otros caracteres en nombres de tool)."""
-    # TODO 10.5: 'mcp__' + server + '__' + tool, sustituyendo cualquier carácter fuera de [a-zA-Z0-9_] por '_' (NAME_RE).
+    """mcp__<server>__<tool>, only [a-zA-Z0-9_] (some models reject other characters in tool names)."""
+    # TODO 10.5: 'mcp__' + server + '__' + tool, replacing any character outside [a-zA-Z0-9_] with '_' (NAME_RE).
     raise NotImplementedError("TODO 10.5")
 
 
 def connect_servers(config: dict[str, dict[str, Any]], stack: ExitStack, read_only: set[str] | None = None) -> tuple[list[Tool], list[str]]:
-    """Arranca cada servidor dentro de `stack` (se cierran al salir). Devuelve (tools, errores).
-    Un servidor que falla no tumba la sesión: se informa y se sigue."""
+    """Starts each server inside `stack` (closed on exit). Returns (tools, errors).
+    A failing server doesn't bring the session down: it is reported and we carry on."""
     tools: list[Tool] = []
     errors: list[str] = []
     for name, spec in config.items():

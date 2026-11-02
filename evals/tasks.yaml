@@ -1,23 +1,23 @@
-# Tareas de evaluación sobre playground/. Cada tarea se ejecuta en una COPIA limpia.
-# check.command: se ejecuta tras el agente en el workdir (exit 0 = aprobado)
-# check.hidden:  tests ocultos que se copian al workdir SOLO para corregir
-# check.answer_contains: la respuesta final debe contener todos estos textos (sin mayúsculas/acentos)
-- id: fix_redondeo
-  prompt: "Hay facturas con IVA que salen con un céntimo de menos. Encuentra la causa y arréglala. Los tests deben pasar."
-  check: {command: "python -m pytest -q tests/test_importes.py"}
+# Evaluation tasks on playground/. Each task runs on a clean COPY.
+# check.command: run in the workdir after the agent (exit 0 = pass)
+# check.hidden:  hidden tests copied into the workdir ONLY for grading
+# check.answer_contains: the final answer must contain all these strings (case- and accent-insensitive)
+- id: fix_rounding
+  prompt: "Some invoices with VAT come out one cent short. Find the cause and fix it. The tests must pass."
+  check: {command: "python -m pytest -q tests/test_amounts.py"}
 
-- id: fix_vencimiento
-  prompt: "Si el vencimiento de una factura cae en domingo no se traslada al lunes. Arréglalo."
-  check: {command: "python -m pytest -q tests/test_fechas.py"}
+- id: fix_due_date
+  prompt: "If an invoice's due date falls on a Sunday it is not moved to Monday. Fix it."
+  check: {command: "python -m pytest -q tests/test_dates.py"}
 
-- id: suite_verde
-  prompt: "Haz que pase toda la suite de tests (python -m pytest -q) sin modificar los tests."
+- id: green_suite
+  prompt: "Make the whole test suite pass (python -m pytest -q) without modifying the tests."
   check: {command: "python -m pytest -q"}
 
-- id: feature_descuento
-  prompt: "Añade a Factura.total() un parámetro opcional descuento (porcentaje 0-100, por defecto 0) que se aplica a la base ANTES del IVA. Si está fuera de rango, ValueError. Añade un test."
-  check: {command: "python -m pytest -q tests/test_descuento_oculto.py", hidden: {"evals/hidden/test_descuento.py": "tests/test_descuento_oculto.py"}}
+- id: feature_discount
+  prompt: "Add an optional `discount` parameter to Invoice.total() (a percentage 0-100, default 0) that is applied to the subtotal BEFORE VAT. If it is out of range, raise ValueError. Add a test."
+  check: {command: "python -m pytest -q tests/test_discount_hidden.py", hidden: {"evals/hidden/test_discount.py": "tests/test_discount_hidden.py"}}
 
-- id: pregunta_iva
-  prompt: "Sin modificar nada: ¿en qué fichero y función se calcula la cuota de IVA y qué tipos admite?"
-  check: {answer_contains: ["importes.py", "calcular_iva", "21", "10", "4"], forbid_changes: true}
+- id: vat_question
+  prompt: "Without modifying anything: in which file and function is the VAT amount calculated, and which rates does it accept?"
+  check: {answer_contains: ["amounts.py", "calculate_vat", "21", "10", "4"], forbid_changes: true}

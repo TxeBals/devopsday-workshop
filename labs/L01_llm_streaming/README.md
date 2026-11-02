@@ -1,37 +1,37 @@
-# Lab 01 · Cliente LLM con streaming
+# Lab 01 · Streaming LLM client
 
-🇬🇧 [English](README.en.md) · Día 1 · 09:30–10:15
+Day 1 · 09:30–10:15
 
-**Objetivo:** Hablar con cualquier backend OpenAI-compatible en streaming y reconstruir las tool calls que llegan troceadas.
+**Goal:** Talk to any OpenAI-compatible backend in streaming mode and rebuild tool calls that arrive in pieces.
 
-## Conceptos
-- **Un protocolo, muchos backends:** Ollama, vLLM, LM Studio, llama.cpp y OpenRouter hablan Chat Completions. El SDK `openai` es solo un cliente HTTP; el modelo es abierto.
-- **Streaming:** el texto llega token a token (la CLI se siente viva). Las **tool calls también llegan troceadas**: `index`, luego `id` y `name`, luego el JSON de argumentos en pedazos, a veces de varias llamadas intercaladas.
-- **Rarezas de modelos locales:** bloques `<think>…</think>` que pueden partirse entre chunks; tool calls escritas como texto `<tool_call>{…}</tool_call>`.
-- **Reintentos:** solo errores transitorios (conexión, 429, 5xx) con backoff exponencial. Un 400 no se arregla reintentando.
+## Concepts
+- **One protocol, many backends:** Ollama, vLLM, LM Studio, llama.cpp and OpenRouter all speak Chat Completions. The `openai` SDK is just an HTTP client; the model is open.
+- **Streaming:** text arrives token by token (the CLI feels alive). **Tool calls arrive in pieces too**: `index`, then `id` and `name`, then the argument JSON in fragments, sometimes interleaved across calls.
+- **Local-model quirks:** `<think>…</think>` blocks that may be split across chunks; tool calls written as text `<tool_call>{…}</tool_call>`.
+- **Retries:** only transient errors (connection, 429, 5xx) with exponential backoff. A 400 isn't fixed by retrying.
 
-## Lo que implementas
-| TODO | Fichero | Qué |
+## What you implement
+| TODO | File | What |
 |---|---|---|
-| 01.1 | `forja/llm.py` | ToolCallAccumulator: concatenar fragmentos por índice |
-| 01.2 | `forja/llm.py` | ThinkFilter: quitar <think> aunque la etiqueta llegue partida |
-| 01.3 | `forja/llm.py` | LLMClient.stream: reintentos, eventos TextDelta y Done |
+| 01.1 | `forja/llm.py` | ToolCallAccumulator: concatenate fragments by index |
+| 01.2 | `forja/llm.py` | ThinkFilter: strip <think> even when the tag is split |
+| 01.3 | `forja/llm.py` | LLMClient.stream: retries, TextDelta and Done events |
 
-## Ejecuta
+## Run
 ```bash
 python scripts/tasks.py test 01
-forja doctor                      # ¿el modelo llama tools?
-forja                             # ya es un chat en streaming (aún sin tools)
+forja doctor                      # does the model call tools?
+forja                             # already a streaming chat (no tools yet)
 ```
 
 ## Checkpoint
-`forja doctor` dice ✔ y `forja` responde en streaming. Aparecen avisos «lab NN pendiente»: es normal.
+`forja doctor` shows ✔ and `forja` answers in streaming. “lab NN pending” notes are expected.
 
-## Retos
-1. Mide el *time-to-first-token* local frente a OpenRouter.
-2. ¿Qué pasa si el modelo emite dos tool calls con el mismo `index`? ¿Puede ocurrir?
+## Challenges
+1. Measure local time-to-first-token against OpenRouter.
+2. What if the model emits two tool calls with the same `index`? Can it happen?
 
-**Tests:** `tests/test_l01_llm.py` · **¿Te has quedado atrás?** `python scripts/tasks.py catchup 02`
+**Tests:** `tests/test_l01_llm.py` · **Fallen behind?** `python scripts/tasks.py catchup 02`
 
 ---
-[← anterior](../L00_setup/README.md) · [siguiente →](../L02_tools_ficheros/README.md)
+[← previous](../L00_setup/README.md) · [next →](../L02_file_tools/README.md)

@@ -1,9 +1,9 @@
-"""LAB 01 — Cliente LLM con streaming (Ollama, vLLM, LM Studio, OpenRouter).
+"""LAB 01 — Streaming LLM client (Ollama, vLLM, LM Studio, OpenRouter).
 
-Un agente de código se siente "vivo" porque el texto llega token a token. Pero en
-streaming las tool calls también llegan troceadas: primero el id y el nombre, luego
-los argumentos JSON en pedazos, a veces de varias llamadas intercaladas por índice.
-Ensamblarlas bien es la primera pieza seria del harness.
+A coding agent feels "alive" because text arrives token by token. But when
+streaming, tool calls also arrive in pieces: first the id and the name, then
+the JSON arguments in fragments, sometimes from several calls interleaved by index.
+Assembling them correctly is the first serious piece of the harness.
 """
 from __future__ import annotations
 
@@ -26,37 +26,37 @@ RETRYABLE = (openai.APIConnectionError, openai.APITimeoutError, openai.RateLimit
 TEXT_TOOLCALL_RE = re.compile(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", re.S)
 
 
-# ---- TODO 01.1 : ensamblar tool calls que llegan troceadas -------------
+# ---- TODO 01.1 : assemble tool calls that arrive in pieces ------------
 @dataclass
 class ToolCallAccumulator:
-    """Recibe los `delta.tool_calls` de cada chunk y reconstruye las llamadas completas.
+    """Receives each chunk's `delta.tool_calls` and rebuilds the complete calls.
 
-    Cada fragmento trae `index` (qué llamada), y opcionalmente `id`, `function.name`
-    y un trozo de `function.arguments` que hay que CONCATENAR.
+    Each fragment carries `index` (which call), and optionally `id`, `function.name`
+    and a piece of `function.arguments` that must be CONCATENATED.
     """
 
     _parts: dict[int, dict[str, str]] = field(default_factory=dict)
 
     def add(self, deltas: list[Any] | None) -> None:
-        # TODO 01.1: Para cada delta: slot = self._parts.setdefault(d.index, {'id': '', 'name': '', 'arguments': ''}). Si d.id, guárdalo. Si d.function: CONCATENA name y arguments (llegan troceados).
+        # TODO 01.1: For each delta: slot = self._parts.setdefault(d.index, {'id': '', 'name': '', 'arguments': ''}). If d.id, store it. If d.function: CONCATENATE name and arguments (they arrive in pieces).
         raise NotImplementedError("TODO 01.1")
 
     def finish(self) -> list[ToolCall]:
-        # TODO 01.1: Recorre los índices en orden; ignora los que no tienen name; crea ToolCall(id o uno generado, name, arguments o '{}').
+        # TODO 01.1: Walk the indices in order; skip those without a name; build ToolCall(id or a generated one, name, arguments or '{}').
         raise NotImplementedError("TODO 01.1")
 
 
-# ---- TODO 01.2 : filtrar <think>…</think> en streaming --------------------
+# ---- TODO 01.2 : filter <think>…</think> while streaming ------------------
 @dataclass
 class ThinkFilter:
-    """Los modelos que razonan (qwen3, deepseek-r1) emiten <think>…</think>. En streaming
-    las etiquetas pueden partirse entre chunks ("<thi" + "nk>"): hay que tener un búfer."""
+    """Reasoning models (qwen3, deepseek-r1) emit <think>…</think>. When streaming,
+    the tags can be split across chunks ("<thi" + "nk>"): a buffer is needed."""
 
     in_think: bool = False
     buf: str = ""
 
     def feed(self, text: str) -> str:
-        # TODO 01.2: Añade el texto a self.buf. Fuera de <think>: emite hasta la etiqueta de apertura (y retén al final un posible principio de '<think>', p. ej. '<thi'). Dentro: descarta hasta '</think>' (reteniendo un posible cierre partido). Devuelve el texto visible.
+        # TODO 01.2: Append the text to self.buf. Outside <think>: emit up to the opening tag (and hold back at the end a possible start of '<think>', e.g. '<thi'). Inside: discard up to '</think>' (holding back a possible split closing tag). Return the visible text.
         raise NotImplementedError("TODO 01.2")
 
     def flush(self) -> str:
@@ -65,7 +65,7 @@ class ThinkFilter:
 
 
 def rescue_text_tool_calls(text: str) -> tuple[str, list[ToolCall]]:
-    """Algunos modelos locales escriben la llamada como texto <tool_call>{…}</tool_call>."""
+    """Some local models write the call as text: <tool_call>{…}</tool_call>."""
     calls = []
     for raw in TEXT_TOOLCALL_RE.findall(text or ""):
         try:
@@ -102,13 +102,13 @@ class LLMClient:
         p.update(kw)
         return p
 
-    # ---- TODO 01.3 : streaming con reintentos y ensamblado final --------
+    # ---- TODO 01.3 : streaming with retries and final assembly ---------
     def stream(self, messages: list[dict], tools: list[dict] | None = None, **kw: Any) -> Iterator[StreamEvent]:
-        # TODO 01.3: params = self._params(...). Crea el stream con reintentos (RETRYABLE, backoff 1,2,4 s; los 4xx no). Por cada chunk: usage si viene; delta.content -> ThinkFilter -> yield TextDelta; delta.tool_calls -> acumulador. Al final: flush, si no hay tool calls prueba rescue_text_tool_calls, y yield Done(ChatResponse(...)).
+        # TODO 01.3: params = self._params(...). Create the stream with retries (RETRYABLE, backoff 1, 2, 4 s; not for 4xx). For each chunk: usage if present; delta.content -> ThinkFilter -> yield TextDelta; delta.tool_calls -> accumulator. At the end: flush, if there are no tool calls try rescue_text_tool_calls, and yield Done(ChatResponse(...)).
         raise NotImplementedError("TODO 01.3")
 
     def chat(self, messages: list[dict], tools: list[dict] | None = None, **kw: Any) -> ChatResponse:
         for ev in self.stream(messages, tools, **kw):
             if isinstance(ev, Done):
                 return ev.response
-        raise RuntimeError("stream sin evento Done")
+        raise RuntimeError("stream without a Done event")

@@ -1,9 +1,9 @@
-# facturas (proyecto de prácticas)
+# invoices (practice project)
 
-Mini librería de facturación con **bugs a propósito**. Es el terreno de juego de Forja:
-los labs la usan para explorar, editar, ejecutar tests y medir con evals.
+A mini invoicing library with **deliberate bugs**. It is Forja's playground:
+the labs use it to explore, edit, run tests and measure with evals.
 
 ```bash
-cd playground && python -m pytest -q     # 2 tests fallan: el agente tiene trabajo
+cd playground && python -m pytest -q     # 3 tests fail: your agent has work to do
 ```
-Antes de cada ejercicio, deja el proyecto como estaba: `git checkout playground/` o `make reset-playground`.
+Before each exercise, put the project back as it was: `python scripts/tasks.py reset` (or `make reset`).

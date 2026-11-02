@@ -1,4 +1,4 @@
-"""LLM guionizado para tests y demos sin GPU (DADO)."""
+"""Scripted LLM for tests and GPU-less demos (PROVIDED)."""
 from __future__ import annotations
 
 import json
@@ -14,7 +14,7 @@ def call(name: str, /, **args: Any) -> ChatResponse:
 
 
 def calls(*pairs: tuple[str, dict]) -> ChatResponse:
-    """Varias tool calls en una misma respuesta (llamadas en paralelo)."""
+    """Several tool calls in one response (parallel calls)."""
     return ChatResponse(None, [ToolCall(f"call_{uuid.uuid4().hex[:6]}", n, json.dumps(a, ensure_ascii=False)) for n, a in pairs],
                         finish_reason="tool_calls")
 
@@ -35,7 +35,7 @@ class FakeLLM:
     def chat(self, messages: list[dict], tools: list[dict] | None = None, **kw: Any) -> ChatResponse:
         self.calls.append({"messages": [dict(m) for m in messages], "tools": tools, "kw": kw})
         if not self.script:
-            return say("(fin del guion)")
+            return say("(end of script)")
         step = self.script.pop(0)
         r = step(messages, tools) if callable(step) else step
         r.model = self.model

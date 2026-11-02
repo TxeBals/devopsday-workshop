@@ -1,11 +1,11 @@
-"""Tareas del workshop, multiplataforma (Windows sin make incluido).
+"""Workshop tasks, cross-platform (including Windows without make).
 
-    python scripts/tasks.py setup              # dependencias + .env
-    python scripts/tasks.py test 03            # tests del lab 03 contra TU código
-    python scripts/tasks.py test               # todos
-    python scripts/tasks.py catchup 05         # resuelve los labs 01-04 (necesita forja-solutions.zip del tutor)
-    python scripts/tasks.py evals [args…]      # evals con tu agente
-    python scripts/tasks.py reset              # deja playground/ como al principio (git)
+    python scripts/tasks.py setup              # dependencies + .env
+    python scripts/tasks.py test 03            # lab 03 tests against YOUR code
+    python scripts/tasks.py test               # all of them
+    python scripts/tasks.py catchup 05         # solves labs 01-04
+    python scripts/tasks.py evals [args…]      # evals with your agent
+    python scripts/tasks.py reset              # puts playground/ back as it was (git)
 """
 from __future__ import annotations
 
@@ -34,7 +34,7 @@ def main() -> int:
         rc = sh(PY, "-m", "pip", "install", "-e", ".[dev]")
         if not (ROOT / ".env").exists():
             shutil.copy(ROOT / ".env.example", ROOT / ".env")
-            print("creado .env (revísalo)")
+            print("created .env (review it)")
         return rc
     if cmd == "test":
         files = sorted(glob.glob(str(ROOT / "tests" / f"test_l{rest[0].zfill(2)}_*.py"))) if rest else ["tests"]
@@ -46,7 +46,7 @@ def main() -> int:
     if cmd == "reset":
         sh("git", "checkout", "--", "playground")
         return sh("git", "clean", "-fdq", "playground")
-    print(f"tarea desconocida: {cmd}\n{__doc__}")
+    print(f"unknown task: {cmd}\n{__doc__}")
     return 1
 
 

@@ -1,6 +1,6 @@
-"""Servidor MCP de ejemplo: un gestor de issues mínimo (stdio).
+"""Example MCP server: a minimal issue tracker (stdio).
 
-    python examples/mcp/issues_server.py      # lo arranca Forja según .forja/settings.json
+    python examples/mcp/issues_server.py      # Forja starts it according to .forja/settings.json
 """
 from __future__ import annotations
 
@@ -23,30 +23,30 @@ def _load() -> list[dict]:
 
 
 @mcp.tool()
-def list_issues(estado: str = "abierta") -> list[dict]:
-    """Lista issues por estado (abierta | cerrada) con id, título y etiquetas."""
-    return [{k: i[k] for k in ("id", "titulo", "etiquetas")} for i in _load() if i["estado"] == estado]
+def list_issues(status: str = "open") -> list[dict]:
+    """Lists issues by status (open | closed) with id, title and labels."""
+    return [{k: i[k] for k in ("id", "title", "labels")} for i in _load() if i["status"] == status]
 
 
 @mcp.tool()
 def get_issue(id: int) -> dict:
-    """Detalle completo de una issue: descripción, pasos para reproducir y comentarios."""
+    """Full detail of an issue: description, steps to reproduce and comments."""
     for i in _load():
         if i["id"] == id:
             return i
-    raise ToolError(f"no existe la issue #{id}")
+    raise ToolError(f"issue #{id} does not exist")
 
 
 @mcp.tool()
-def comment_issue(id: int, texto: str) -> dict:
-    """Añade un comentario a una issue (acción con efectos)."""
+def comment_issue(id: int, text: str) -> dict:
+    """Adds a comment to an issue (an action with side effects)."""
     issues = _load()
     for i in issues:
         if i["id"] == id:
-            i.setdefault("comentarios", []).append(texto)
+            i.setdefault("comments", []).append(text)
             DATA.write_text(json.dumps(issues, ensure_ascii=False, indent=1), encoding="utf-8")
-            return {"ok": True, "comentarios": len(i["comentarios"])}
-    raise ToolError(f"no existe la issue #{id}")
+            return {"ok": True, "comments": len(i["comments"])}
+    raise ToolError(f"issue #{id} does not exist")
 
 
 if __name__ == "__main__":
