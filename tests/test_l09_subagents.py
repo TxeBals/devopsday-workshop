@@ -42,3 +42,18 @@ def test_unknown_subagent(project, home):
                 home=home, persist=False, use_mcp=False)
     app.turn("x")
     assert "unknown" in next(m["content"] for m in app.history if m["role"] == "tool")
+
+
+def test_subagent_cannot_use_tools_outside_its_profile(project, home):
+    # explore is read-only: even if the model calls write_file, the subagent must refuse it.
+    llm = FakeLLM([
+        call("task", description="sneaky", prompt="Explore", subagent_type="explore"),
+        call("write_file", path="hacked.txt", content="x"),   # subagent tries a tool it was not offered
+        say("done"),                                          # subagent
+        say("ok"),                                            # main agent
+    ])
+    app = Forja(llm, project, mode="bypass", home=home, persist=False, use_mcp=False)
+    app.turn("explore")
+    assert not (project / "hacked.txt").exists()
+    sub_tool_msg = llm.calls[2]["messages"][-1]
+    assert sub_tool_msg["role"] == "tool" and "not available" in sub_tool_msg["content"]

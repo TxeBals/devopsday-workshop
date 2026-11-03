@@ -55,6 +55,6 @@ def decide(tool: Tool, args: dict[str, Any], mode: Mode, allow: list[str], deny:
 # ---- TODO 04.5 : suggest a rule for "always approve" --------------------------
 def suggest_rule(tool: Tool, args: dict[str, Any]) -> str:
     """When the answer is 'always', we save a sensible rule, not the literal command:
-    bash `pytest -q tests/x.py` -> `bash(pytest *)`; edit_file -> `edit_file`."""
+    bash `pytest -q tests/x.py` -> `bash(pytest*)`; edit_file -> `edit_file`."""
     # TODO 04.5: bash: shlex.split; 'python -m X' -> bash(python -m X*); git/npm/uv/pip/docker… -> bash(<cmd> <subcmd>*); others -> bash(<cmd>*). Other tools: their name.
     raise NotImplementedError("TODO 04.5")

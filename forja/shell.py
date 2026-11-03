@@ -47,7 +47,7 @@ def make_shell_tool(ws: Workspace, default_timeout: int = 120) -> Tool:
             command: Command to run.
             timeout: Maximum seconds (default 120, maximum 600).
         """
-        # TODO 04.2: subprocess.run(command, shell=True, cwd=ws.root, capture_output, text, timeout (1..600), env=clean_env(), stdin=DEVNULL). TimeoutExpired -> 'TIMEOUT after Ns'. Return ToolOutput('exit_code=N\n' + head_tail(stdout + [stderr]), {'exit_code': N}).
+        # TODO 04.2: subprocess.run(command, shell=True, cwd=ws.root, capture_output, text, encoding='utf-8', errors='replace', timeout (1..600), env=clean_env(), stdin=DEVNULL). TimeoutExpired -> 'TIMEOUT after Ns'. Return ToolOutput('exit_code=N\n' + head_tail(stdout + [stderr]), {'exit_code': N}).
         raise NotImplementedError("TODO 04.2")
 
     shell = "cmd.exe (Windows: use cmd syntax or invoke `powershell -Command ...`)" if os.name == "nt" else "/bin/sh"

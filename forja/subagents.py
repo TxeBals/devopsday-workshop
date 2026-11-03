@@ -59,7 +59,7 @@ def make_task_tool(llm: ChatModel, parent_tools: ToolRegistry, profiles: dict[st
     @tool(risk="read")
     def task(description: str, prompt: str, subagent_type: str = "explore") -> str:
         """placeholder"""
-        # TODO 09.2: Look up the profile (ValueError if missing). sub_tools = parent_tools.subset(the profile's tools, without 'task'). Agent(llm, sub_tools, execute=execute, max_steps, events=events_factory(name) or Events()). NEW messages: [profile system, user prompt]. Return '[subagent …] ' + the answer.
+        # TODO 09.2: Look up the profile (ValueError if missing). sub_tools = parent_tools.subset(the profile's tools, without 'task'). Wrap execute so a call to a tool NOT in sub_tools returns ToolResult(ok=False, 'ERROR: tool ... is not available to subagent ...') instead of running. Agent(llm, sub_tools, execute=<wrapper>, max_steps, events=events_factory(name) or Events()). NEW messages: [profile system, user prompt]. Return '[subagent …] ' + the answer.
         raise NotImplementedError("TODO 09.2")
 
     task.description = ("Launches a subagent with its own context for a self-contained task (especially code searches and "

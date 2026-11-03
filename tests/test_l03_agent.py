@@ -70,7 +70,6 @@ def test_max_steps_and_loop():
     r = Agent(FakeLLM([call("write", x="1") for _ in range(10)]), reg(), max_repeats=2).run(msgs)
     assert r.stop_reason == "loop"
     # the history stays valid: every tool_call has its response
-    last_calls = [tc["id"] for tc in msgs[-2 if msgs[-1]["role"] == "tool" else -1].get("tool_calls", [])] if False else None
     open_ids = set()
     for m in msgs:
         if m["role"] == "assistant":

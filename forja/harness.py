@@ -91,7 +91,7 @@ class Forja:
         if self.skills:
             reg.register(skills.make_skill_tool(self.skills))
         if self.use_mcp and self.settings.mcp_servers:
-            tools, errors = connect_servers(self.settings.mcp_servers, self._stack)
+            tools, errors = connect_servers(self.settings.mcp_servers, self._stack, cwd=str(self.root))
             reg.register(*tools)
             self.notes += errors
         profiles = self._opt("subagents", lambda: subagents.load_profiles(self.root / ".forja" / "agents"), dict(subagents.BUILTIN))
@@ -110,11 +110,16 @@ class Forja:
         self._stack.close()
 
     # ------------------------------------------------------------------ the gate
+    def _run_hook(self, event: str, payload: dict, tool_name: str | None = None) -> "hooks.HookOutcome":
+        out = self.hooks.run(event, payload, tool_name)
+        self.notes += [f"hook {event}: {e}" for e in out.errors]
+        return out
+
     def gate(self, call: ToolCall) -> ToolResult:
         tool, args, err = self.registry.parse_args(call)
         if err:
             return ToolResult(call.id, call.name, False, err)
-        pre = self._opt("hooks", lambda: self.hooks.run("PreToolUse", {"tool_name": tool.name, "tool_input": args}, tool.name), hooks.HookOutcome())
+        pre = self._opt("hooks", lambda: self._run_hook("PreToolUse", {"tool_name": tool.name, "tool_input": args}, tool.name), hooks.HookOutcome())
         if pre.block:
             return ToolResult(call.id, call.name, False, f"BLOCKED by hook: {pre.message}")
         fallback = ("allow", "lab 04 pending") if tool.risk == "read" else ("ask", "lab 04 pending")
@@ -136,7 +141,7 @@ class Forja:
             result = self.registry.execute(call)
         except NotImplementedError as e:
             return ToolResult(call.id, call.name, False, f"ERROR: {e} (lab pending)")
-        post = self._opt("hooks", lambda: self.hooks.run("PostToolUse", {"tool_name": tool.name, "tool_input": args,
+        post = self._opt("hooks", lambda: self._run_hook("PostToolUse", {"tool_name": tool.name, "tool_input": args,
                                                                           "tool_response": result.output[:5000]}, tool.name), hooks.HookOutcome())
         if post.block:
             result.output += f"\n\n[hook PostToolUse] {post.message}"
@@ -170,7 +175,7 @@ class Forja:
     # ------------------------------------------------------------------ one turn
     def turn(self, text: str) -> AgentResult:
         self.cancel.clear()
-        hook = self._opt("hooks", lambda: self.hooks.run("UserPromptSubmit", {"prompt": text}), hooks.HookOutcome())
+        hook = self._opt("hooks", lambda: self._run_hook("UserPromptSubmit", {"prompt": text}), hooks.HookOutcome())
         if hook.block:
             return AgentResult(f"Message blocked by hook: {hook.message}", "final", 0)
         content = self._opt("context", lambda: context.expand_mentions(text, self.ws), text)
@@ -192,7 +197,7 @@ class Forja:
         for _ in range(3):  # Stop hooks: completion gates ("don't finish until the tests pass")
             if result.stop_reason != "final":
                 break
-            stop = self._opt("hooks", lambda: self.hooks.run("Stop", {"last_assistant_message": result.answer}), hooks.HookOutcome())
+            stop = self._opt("hooks", lambda: self._run_hook("Stop", {"last_assistant_message": result.answer}), hooks.HookOutcome())
             if not stop.block:
                 break
             messages.append({"role": "user", "content": f"[Stop hook] You are not done yet:\n{stop.message}"})

@@ -56,8 +56,8 @@ def load_tasks(path: Path) -> list[EvalTask]:
 def snapshot(root: Path) -> dict[str, str]:
     out = {}
     for p in sorted(root.rglob("*")):
-        if p.is_file() and not any(part in {".forja", "__pycache__", ".pytest_cache"} for part in p.parts):
-            out[str(p.relative_to(root))] = hashlib.sha1(p.read_bytes()).hexdigest()
+        if p.is_file() and not any(part in {".forja", ".git", "__pycache__", ".pytest_cache"} for part in p.parts):
+            out[p.relative_to(root).as_posix()] = hashlib.sha1(p.read_bytes()).hexdigest()
     return out
 
 
@@ -72,13 +72,34 @@ def grade(task: EvalTask, workdir: Path, answer: str, before: dict[str, str], re
     raise NotImplementedError("TODO 12.1")
 
 
-def run_task(task: EvalTask, llm: ChatModel, playground: Path, repo_root: Path, max_steps: int = 30) -> TaskResult:
+def _git_baseline(work: Path) -> None:
+    """Commit the clean copy so hooks/tools that look at `git status`/`git diff` see only the agent's changes."""
+    git = ["git", "-c", "user.name=forja-eval", "-c", "user.email=eval@localhost", "-c", "commit.gpgsign=false"]
+    try:
+        for cmd in (["init", "-q"], ["add", "-A"], ["commit", "-q", "-m", "eval baseline"]):
+            subprocess.run(git + cmd, cwd=work, capture_output=True, timeout=30, check=True)
+    except (OSError, subprocess.SubprocessError):
+        pass  # no git: hooks fall back to their non-git behaviour
+
+
+def run_task(task: EvalTask, llm: ChatModel, playground: Path, repo_root: Path, max_steps: int = 30,
+             config: Path | None = None, use_mcp: bool = False) -> TaskResult:
+    """Runs one task on a clean copy of `playground` in bypass mode.
+
+    config: a `.forja` folder (settings.json + hooks/ + skills/ + agents/) copied into the work copy, so the eval measures
+            YOUR harness configuration (AGENTS.md is always part of the playground). Without it, no project config is used.
+    use_mcp: also start the MCP servers from that settings.json (relative paths resolve from the work copy)."""
     with tempfile.TemporaryDirectory(prefix=f"forja-eval-{task.id}-") as tmp:
         work = Path(tmp) / "project"
         shutil.copytree(playground, work, ignore=shutil.ignore_patterns("__pycache__", ".pytest_cache", ".forja"))
+        if config:
+            shutil.copytree(config, work / ".forja", ignore=shutil.ignore_patterns("__pycache__", "sessions"))
+        _git_baseline(work)
         before = snapshot(work)
-        app = Forja(llm, work, mode="bypass", settings=Settings(max_steps=max_steps), home=Path(tmp) / "home",
-                    persist=False, use_mcp=False)
+        home = Path(tmp) / "home"
+        settings = Settings.load(work, home=home) if config else Settings()
+        settings.max_steps = max_steps
+        app = Forja(llm, work, mode="bypass", settings=settings, home=home, persist=False, use_mcp=use_mcp)
         t0 = time.time()
         try:
             r = app.turn(task.prompt)

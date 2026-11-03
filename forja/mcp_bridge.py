@@ -38,8 +38,9 @@ class MCPBridge:
             registry.register(*mcp.tools(prefix="core_"))
     """
 
-    def __init__(self, command: list[str], env: dict[str, str] | None = None, timeout: float = 30.0):
-        self.params = StdioServerParameters(command=command[0] if command[0] != "python" else sys.executable, args=command[1:], env=env) if command else None
+    def __init__(self, command: list[str], env: dict[str, str] | None = None, timeout: float = 30.0, cwd: str | None = None):
+        self.params = StdioServerParameters(command=command[0] if command[0] != "python" else sys.executable, args=command[1:], env=env,
+                                            cwd=cwd) if command else None
         self.url: str | None = None
         self.headers: dict[str, str] = {}
         self.timeout = timeout

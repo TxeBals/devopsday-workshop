@@ -40,7 +40,7 @@ class Workspace:
         raise NotImplementedError("TODO 02.3")
 
     def rel(self, p: Path) -> str:
-        return str(p.relative_to(self.root)) if p != self.root else "."
+        return p.relative_to(self.root).as_posix() if p != self.root else "."
 
     def mark_read(self, p: Path) -> None:
         self.read_state[p] = p.stat().st_mtime
@@ -134,7 +134,7 @@ def make_fs_tools(ws: Workspace) -> list[Tool]:
             path: Directory to search from.
         """
         base = ws.resolve(path)
-        hits = [f for f in ws.walk(base) if fnmatch.fnmatch(str(f.relative_to(base)), pattern)
+        hits = [f for f in ws.walk(base) if fnmatch.fnmatch(f.relative_to(base).as_posix(), pattern)
                 or fnmatch.fnmatch(f.name, pattern)]
         hits.sort(key=lambda f: f.stat().st_mtime, reverse=True)
         if not hits:

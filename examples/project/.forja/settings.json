@@ -6,7 +6,7 @@
   "hooks": {
     "PreToolUse":  [{"matcher": "bash", "command": "python .forja/hooks/block_secrets.py"}],
     "PostToolUse": [{"matcher": "edit_file|write_file", "command": "python .forja/hooks/compile_check.py"}],
-    "Stop":        [{"command": "python -m pytest -q -x --no-header -p no:cacheprovider"}]
+    "Stop":        [{"command": "python .forja/hooks/stop_tests.py"}]
   },
   "mcpServers": {
     "issues": {"command": ["python", "../examples/mcp/issues_server.py"]}

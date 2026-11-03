@@ -33,8 +33,10 @@ def mcp_tool_name(server: str, tool: str) -> str:
     raise NotImplementedError("TODO 10.5")
 
 
-def connect_servers(config: dict[str, dict[str, Any]], stack: ExitStack, read_only: set[str] | None = None) -> tuple[list[Tool], list[str]]:
+def connect_servers(config: dict[str, dict[str, Any]], stack: ExitStack, read_only: set[str] | None = None,
+                    cwd: str | None = None) -> tuple[list[Tool], list[str]]:
     """Starts each server inside `stack` (closed on exit). Returns (tools, errors).
+    stdio servers run with `cwd` (the project root), so relative paths in settings.json resolve from the project.
     A failing server doesn't bring the session down: it is reported and we carry on."""
     tools: list[Tool] = []
     errors: list[str] = []
@@ -44,7 +46,7 @@ def connect_servers(config: dict[str, dict[str, Any]], stack: ExitStack, read_on
                 token = os.getenv(spec["token_env"]) if spec.get("token_env") else None
                 bridge = stack.enter_context(MCPBridge.http(spec["url"], token=token))
             else:
-                bridge = stack.enter_context(MCPBridge(list(spec["command"]), env=spec.get("env")))
+                bridge = stack.enter_context(MCPBridge(list(spec["command"]), env=spec.get("env"), cwd=spec.get("cwd", cwd)))
             for t in bridge.tools(prefix="", risk="exec"):
                 t.name = mcp_tool_name(name, t.name)
                 if read_only and t.name in read_only:
