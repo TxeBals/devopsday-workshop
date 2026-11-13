@@ -56,3 +56,8 @@ devopsday-workshop/
 - Synthetic data and practice project.
 - Forja is an independent implementation of the publicly documented architecture of coding agents.
 - Tests need no model or GPU. Model tags change: check them before the workshop.
+
+
+The Solution of workshop=> https://github.com/TxeBals/workshop-tutor
+The school=> https://theagenticschool.com/
+txemagonzalez.com
